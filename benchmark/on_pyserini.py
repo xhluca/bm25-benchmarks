@@ -19,6 +19,8 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 from pyserini.search import LuceneSearcher
 from pyserini.analysis import Analyzer, get_lucene_analyzer
 
+from utils.beir import merge_cqa_dupstack
+
 def format_beir_result_keys(beir_results):
     return {
         k.split("@")[-1]: v for k, v in beir_results.items()
@@ -276,7 +278,9 @@ def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=
     url = base_url.format(dataset)
     data_dir = Path(save_dir)
     data_path = beir.util.download_and_unzip(url, str(data_dir))
-
+    if dataset == "cqadupstack":
+            merge_cqa_dupstack(data_path)
+        
     corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
     num_docs = len(corpus)
     corpus_records = [

@@ -139,9 +139,8 @@ def main(dataset, n_threads=1, top_k=1000, batch_size=32, save_dir="datasets", r
 
     max_mem_gb = get_max_memory_usage("GB")
 
-    print("=" * 50)
-    print(f"Max Memory Usage: {max_mem_gb:.4f} GB")
     print("-" * 50)
+    print(f"Max Memory Usage: {max_mem_gb:.4f} GB")
     print(ndcg)
     print(recall)
     print("=" * 50)

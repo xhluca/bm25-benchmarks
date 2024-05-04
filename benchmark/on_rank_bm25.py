@@ -42,7 +42,7 @@ def compute_top_k_from_scores(scores, corpus=None, k=10, sorting=False, with_sco
     else:
         return results
 
-def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="results"):
+def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="results", verbose=False):
     #### Download dataset and unzip the dataset
     data_path = beir.util.download_and_unzip(BASE_URL.format(dataset), save_dir)
 
@@ -102,7 +102,7 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
     t_score = timer.start("Score")
     timer.pause("Score")
     t_query = timer.start("Query")
-    for q in tqdm(queries_tokenized, desc="Rank-BM25 Scoring", leave=False):
+    for q in tqdm(queries_tokenized, desc="Rank-BM25 Scoring", leave=False, disable=not verbose):
         timer.resume(t_score)
         raw_scores = model.get_scores(q)
         timer.pause(t_score)
@@ -125,9 +125,8 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
 
     max_mem_gb = get_max_memory_usage("GB")
 
-    print("=" * 50)
-    print(f"Max Memory Usage: {max_mem_gb:.4f} GB")
     print("-" * 50)
+    print(f"Max Memory Usage: {max_mem_gb:.4f} GB")
     print(ndcg)
     print(recall)
     print("=" * 50)
