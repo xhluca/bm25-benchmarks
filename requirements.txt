@@ -1,6 +1,4 @@
 beir
 rank-bm25
 PyStemmer
-bm25-pt
-pyserini
 ujson
