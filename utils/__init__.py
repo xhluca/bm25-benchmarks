@@ -2,8 +2,6 @@ from functools import partial
 import re
 from typing import Any, Dict, List, Union, Callable, NamedTuple
 
-from tqdm.auto import tqdm
-
 class Tokenized(NamedTuple):
     ids: List[List[int]]
     vocab: Dict[str, int]
@@ -65,6 +63,7 @@ def tokenize(
     leave: bool = False,
     verbose: bool = False,
 ):
+    from tqdm.auto import tqdm
     if isinstance(texts, str):
         texts = [texts]
     
