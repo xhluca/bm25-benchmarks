@@ -48,8 +48,14 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
 
     if dataset == "cqadupstack":
         merge_cqa_dupstack(data_path)
-
-    corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+    
+    if dataset == "msmarco":
+        split = "dev"
+    else:
+        split = "test"
+    
+    corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split=split)
+    
     num_docs = len(corpus)
     corpus_ids, corpus_lst = [], []
     for key, val in corpus.items():
