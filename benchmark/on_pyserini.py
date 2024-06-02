@@ -280,8 +280,14 @@ def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=
     data_path = beir.util.download_and_unzip(url, str(data_dir))
     if dataset == "cqadupstack":
             merge_cqa_dupstack(data_path)
-        
-    corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split="test")
+    
+    if dataset == "msmarco":
+        split = "dev"
+    else:
+        split = "test"
+    
+    corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split=split)
+    
     num_docs = len(corpus)
     corpus_records = [
         {'id': key, 'contents': val['title'] + " " + val['text']} for key, val in corpus.items()
