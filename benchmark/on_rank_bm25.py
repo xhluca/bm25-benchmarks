@@ -22,7 +22,9 @@ from utils.beir import (
 )
 
 
-def compute_top_k_from_scores(scores, corpus=None, k=10, sorting=False, with_scores=False):
+def compute_top_k_from_scores(
+    scores, corpus=None, k=10, sorting=False, with_scores=False
+):
     if not isinstance(scores, np.ndarray):
         scores = np.array(scores)
 
@@ -43,27 +45,36 @@ def compute_top_k_from_scores(scores, corpus=None, k=10, sorting=False, with_sco
     else:
         return results
 
-def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="results", samples=0, verbose=False):
+
+def main(
+    dataset,
+    method="rank",
+    n_threads=1,
+    top_k=1000,
+    save_dir="datasets",
+    result_dir="results",
+    samples=0,
+    verbose=False,
+):
     #### Download dataset and unzip the dataset
     data_path = beir.util.download_and_unzip(BASE_URL.format(dataset), save_dir)
 
     if dataset == "cqadupstack":
         merge_cqa_dupstack(data_path)
-    
+
     if dataset == "msmarco":
         split = "dev"
     else:
         split = "test"
-    
+
     corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split=split)
-    
-    
+
     if samples > 0:
         random.seed(42)
         query_keys = list(queries.keys())
         query_keys = random.sample(query_keys, samples)
         queries = {k: queries[k] for k in query_keys}
-    
+
     num_docs = len(corpus)
     corpus_ids, corpus_lst = [], []
     for key, val in corpus.items():
@@ -94,7 +105,7 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
     timer.stop(t, show=True, n_total=num_docs)
 
     del corpus_lst
-    
+
     t = timer.start("Tokenize Queries")
     queries_tokenized = utils.tokenize(queries_lst, stopwords="en", stemmer=stemmer)
     timer.stop(t, show=True, n_total=len(queries_lst))
@@ -105,9 +116,17 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
     print("-" * 50)
 
     t = timer.start("Index")
-    model = rank_bm25.BM25Okapi(
-        corpus=tokenized_corpus, epsilon=0.0
-    )
+    if method == "rank":
+        model = rank_bm25.BM25Okapi(
+            corpus=tokenized_corpus, epsilon=0.0, k1=1.5, b=0.75
+        )
+    elif method == "bm25l":
+        model = rank_bm25.BM25L(corpus=tokenized_corpus, k1=1.5, b=0.75, delta=0.5)
+    elif method == "bm25+":
+        model = rank_bm25.BM25Plus(corpus=tokenized_corpus, k1=1.5, b=0.75, delta=0.5)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
     timer.stop(t, show=True, n_total=num_docs)
 
     results = []
@@ -116,7 +135,9 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
     t_score = timer.start("Score")
     timer.pause("Score")
     t_query = timer.start("Query")
-    for q in tqdm(queries_tokenized, desc="Rank-BM25 Scoring", leave=False, disable=not verbose):
+    for q in tqdm(
+        queries_tokenized, desc="Rank-BM25 Scoring", leave=False, disable=not verbose
+    ):
         timer.resume(t_score)
         raw_scores = model.get_scores(q)
         timer.pause(t_score)
@@ -125,7 +146,7 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
         )
         results.append(result)
         scores.append(score)
-    
+
     queried_results = np.array(results)
     queried_scores = np.array(scores)
 
@@ -151,6 +172,7 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
         "dataset": dataset,
         "stemmer": "snowball",
         "tokenizer": "skl",
+        "method": method,
         "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         "n_threads": n_threads,
         "samples": samples,
@@ -202,17 +224,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--num_runs", 
-        type=int,
-        default=1,
-        help="Number of runs to repeat main."
+        "--num_runs", type=int, default=1, help="Number of runs to repeat main."
     )
 
     parser.add_argument(
-        "--samples", 
+        "--samples",
         type=int,
         default=0,
-        help="Number of samples to use from the dataset. If 0, use all samples."
+        help="Number of samples to use from the dataset. If 0, use all samples.",
     )
 
     parser.add_argument(
@@ -237,6 +256,12 @@ if __name__ == "__main__":
         type=str,
         default="datasets",
         help="Directory to save datasets.",
+    )
+    parser.add_argument(
+        "--method",
+        type=str,
+        default="rank",
+        choices=["rank", "bm25l", "bm25+"],
     )
 
     kwargs = vars(parser.parse_args())
