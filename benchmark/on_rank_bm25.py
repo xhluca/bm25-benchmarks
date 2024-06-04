@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import random
 import time
 
 import beir.util
@@ -42,7 +43,7 @@ def compute_top_k_from_scores(scores, corpus=None, k=10, sorting=False, with_sco
     else:
         return results
 
-def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="results", verbose=False):
+def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="results", samples=0, verbose=False):
     #### Download dataset and unzip the dataset
     data_path = beir.util.download_and_unzip(BASE_URL.format(dataset), save_dir)
 
@@ -55,6 +56,13 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
         split = "test"
     
     corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split=split)
+    
+    
+    if samples > 0:
+        random.seed(42)
+        query_keys = list(queries.keys())
+        query_keys = random.sample(query_keys, samples)
+        queries = {k: queries[k] for k in query_keys}
     
     num_docs = len(corpus)
     corpus_ids, corpus_lst = [], []
@@ -145,6 +153,7 @@ def main(dataset, n_threads=1, top_k=1000, save_dir="datasets", result_dir="resu
         "tokenizer": "skl",
         "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         "n_threads": n_threads,
+        "samples": samples,
         "top_k": top_k,
         "max_mem_gb": max_mem_gb,
         "stats": {
@@ -197,6 +206,13 @@ if __name__ == "__main__":
         type=int,
         default=1,
         help="Number of runs to repeat main."
+    )
+
+    parser.add_argument(
+        "--samples", 
+        type=int,
+        default=0,
+        help="Number of samples to use from the dataset. If 0, use all samples."
     )
 
     parser.add_argument(
