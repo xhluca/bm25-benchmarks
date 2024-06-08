@@ -13,9 +13,7 @@ from tqdm.auto import tqdm
 from beir.retrieval.search.lexical import BM25Search
 
 from utils.benchmark import get_max_memory_usage, Timer
-from utils.beir import merge_cqa_dupstack
-
-
+from utils.beir import merge_cqa_dupstack, clean_results_keys
 
 def compute_top_k_from_scores(
     scores, corpus=None, k=10, sorting=False, with_scores=False
@@ -50,7 +48,8 @@ def main(
     hostname = "localhost"
 ):
     #### Download dataset and unzip the dataset
-    data_path = beir.util.download_and_unzip(BASE_URL.format(dataset), save_dir)
+    base_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip"
+    data_path = beir.util.download_and_unzip(base_url.format(dataset), save_dir)
 
     if dataset == "msmarco":
         split = "dev"
