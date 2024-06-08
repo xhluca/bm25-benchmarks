@@ -161,3 +161,7 @@ cython_debug/
 
 datasets/
 results/
+
+# Ignore elasticsearch
+elasticsearch-*.tar.gz
+elasticsearch-*/

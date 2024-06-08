@@ -13,9 +13,13 @@ python -m benchmark.on_rank_bm25 -d "<dataset>"
 
 # for Pyserini
 python -m benchmark.on_pyserini -d "<dataset>"
+
+# For elastic, After starting the server, run:
+python -m benchmark.on_elastic -d "<dataset>"
 ```
 
 where `<dataset>` is the name of the dataset to be used. 
+
 
 ### Available datasets
 
@@ -52,6 +56,25 @@ For `rank-bm25`, we can also specify the method with `--method` to be used:
 
 Results will be saved in `results/` directory.
 
+### Elasticsearch server
+
+If you want to use elastic search, you need to start the server first. 
+
+First, download the elastic search from [here](https://www.elastic.co/downloads/past-releases/elasticsearch-8-14-0). You will get a file, e.g. `elasticsearch-8.14.0-linux-x86_64.tar.gz`. Extract the file and ensure it is in the same directory as the `bm25-benchmarks` directory.
+
+```bash
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.14.0-linux-x86_64.tar.gz
+tar -xzf elasticsearch-8.14.0-linux-x86_64.tar.gz
+# remove the tar file
+rm elasticsearch-8.14.0-linux-x86_64.tar.gz
+```
+
+Then, start the server with the following command:
+
+```bash
+./elasticsearch-8.14.0/bin/elasticsearch -E xpack.security.enabled=false -E thread_pool.search.size=1 -E thread_pool.write.size=1
+```
+
 ## Results
 
 The results are benchmarked using Kaggle notebooks to ensure reproducibility. Each one is run on single-core, Intel Xeon CPU @ 2.20GHz, using 30GB RAM.
@@ -60,6 +83,7 @@ The shorthands used are:
 - `BM25PT` for `bm25_pt`
 - `PSRN` for `pyserini`
 - `R-BM25` for `rank-bm25`
+- `ES` for `elasticsearch`
 - `OOM` for out-of-memory error
 - `DNT` for did not terminate (i.e. went over 12 hours)
 
