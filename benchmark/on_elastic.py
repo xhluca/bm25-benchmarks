@@ -45,7 +45,9 @@ def main(
     top_k=1000,
     save_dir="datasets",
     result_dir="results",
-    hostname = "localhost"
+    hostname = "localhost",
+    k1=1.2,
+    b=0.75,
 ):
     #### Download dataset and unzip the dataset
     base_url = "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{}.zip"
@@ -78,8 +80,8 @@ def main(
                 "similarity": {
                     "default": {
                         "type": "BM25",
-                        "k1": 1.2,
-                        "b": 0.75
+                        "k1": k1,
+                        "b": b,
                     }
                 }
             }
@@ -116,8 +118,10 @@ def main(
     save_dict = {
         "model": "elastic-bm25",
         "dataset": dataset,
-        "stemmer": "snowball",
+        "stemmer": "elastic",
         "tokenizer": "skl",
+        "k1": k1,
+        "b": b,
         "method": "bm25",
         "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         "n_threads": n_threads,
@@ -193,6 +197,27 @@ if __name__ == "__main__":
         type=str,
         default="datasets",
         help="Directory to save datasets.",
+    )
+
+    parser.add_argument(
+        "--hostname",
+        type=str,
+        default="localhost",
+        help="Hostname of the ElasticSearch server.",
+    )
+
+    parser.add_argument(
+        "--k1",
+        type=float,
+        default=1.2,
+        help="BM25 k1 parameter.",
+    )
+
+    parser.add_argument(
+        "--b",
+        type=float,
+        default=0.75,
+        help="BM25 b parameter.",
     )
 
     kwargs = vars(parser.parse_args())

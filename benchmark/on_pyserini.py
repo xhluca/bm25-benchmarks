@@ -269,7 +269,7 @@ def build_pyserini_index(
     return out
 
 
-def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=1000):
+def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=1000, k1=1.2, b=0.75):
     warnings.filterwarnings("ignore", category=UserWarning)
 
     #### Download dataset and unzip the dataset
@@ -322,7 +322,7 @@ def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=
 
     searcher = LuceneSearcher(str(pyserini_data_dir / "index"))
     # searcher.set_analyzer(analyzer=lucene_analyzer)
-    searcher.set_bm25(k1=1.5, b=0.75)
+    searcher.set_bm25(k1=k1, b=b)
     # ################### BEIR BENCHMARKING HERE ###################
     # results's format: {query_id: {doc_id: score, doc_id: score, ...}, ...}
     k_values = [1,10,100,1000]
@@ -349,6 +349,8 @@ def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=
         "stemmer": "porter",
         "tokenizer": "lucene",
         "method": "lucene",
+        "k1": k1,
+        "b": b,
         "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         "n_threads": n_threads,
         "top_k": top_k,
@@ -412,6 +414,20 @@ if __name__ == "__main__":
         type=str,
         default="results",
         help="Directory to save results.",
+    )
+
+    parser.add_argument(
+        "--k1",
+        type=float,
+        default=1.2,
+        help="BM25 k1 parameter.",
+    )
+
+    parser.add_argument(
+        "--b",
+        type=float,
+        default=0.75,
+        help="BM25 b parameter.",
     )
 
     kwargs = vars(parser.parse_args())
