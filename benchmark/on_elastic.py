@@ -84,6 +84,22 @@ def main(
                         "b": b,
                     }
                 }
+            },
+            "analysis": {
+                "analyzer": {
+                    "custom_analyzer": {
+                        "type": "standard",
+                        "max_token_length": 1_000_000,
+                        "stopwords": "_english_",
+                        "filter": [ "lowercase", "custom_snowball"]
+                    }
+                },
+                "filter": {
+                    "custom_snowball": {
+                        "type": "snowball",
+                        "language": "English"
+                    }
+                }
             }
         }
     }
@@ -118,8 +134,8 @@ def main(
     save_dict = {
         "model": "elastic-bm25",
         "dataset": dataset,
-        "stemmer": "elastic",
-        "tokenizer": "skl",
+        "stemmer": "snowball",
+        "tokenizer": "elastic",
         "k1": k1,
         "b": b,
         "method": "bm25",
