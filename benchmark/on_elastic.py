@@ -1,5 +1,3 @@
-# run in terminal with:
-# ES_JAVA_OPTS="-Dprocessors=1" ./bin/elasticsearch -E xpack.security.enabled=false
 import json
 import os
 from pathlib import Path
