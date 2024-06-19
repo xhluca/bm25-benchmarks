@@ -165,3 +165,5 @@ results/
 # Ignore elasticsearch
 elasticsearch-*.tar.gz
 elasticsearch-*/
+multicore_results/
+analysis/out/multicore
