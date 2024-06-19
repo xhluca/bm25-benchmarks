@@ -111,7 +111,30 @@ The shorthands used are:
 
 Notes:
 * For Rank-BM25, larger datasets are ran with 1000 samples rather than the full dataset to ensure it finishes within 12h (limit for Kaggle notebooks).
+* For ES and BM25S, we can set a number of threads to use. However, you might not see an improvement, in fact you might even see a decrease in throughput in the case of BM25S due to how multi-threading is implemented. Click below to see the results.
 
+<details>
+<summary>Show BM25S & ES multi-threaded (4T) performance (Q/s)</summary>
+
+| dataset          |   BM25S |    ES |
+|:-----------------|--------:|------:|
+| arguana          |  211    | 33.37 |
+| climate-fever    |   22.06 |  8.13 |
+| cqadupstack      |  248.87 | 27.76 |
+| dbpedia-entity   |   26.18 | 15.49 |
+| fever            |   47.03 | 14.07 |
+| fiqa             |  449.82 | 36.33 |
+| hotpotqa         |   45.02 | 10.35 |
+| msmarco          |   21.64 | 18.19 |
+| nfcorpus         |  784.24 | 81.07 |
+| nq               |   77.49 | 19.18 |
+| quora            |  308.58 | 43.02 |
+| scidocs          |  614.23 | 46.36 |
+| scifact          |  645.88 | 50.93 |
+| trec-covid       |  100.88 | 13.5  |
+| webis-touche2020 |  202.39 | 26.55 |
+
+</details>
 
 <details>
 <summary>Show normalized table wrt Rank-BM25</summary>
@@ -135,6 +158,7 @@ Notes:
 | webis-touche2020 |   55.08 |  12.3  |  11.24 | nan    |      1 |
 
 </details>
+
 
 #### Stats
 
