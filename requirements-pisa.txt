@@ -1,0 +1,2 @@
+pyterrier_pisa
+-r requirements.txt
