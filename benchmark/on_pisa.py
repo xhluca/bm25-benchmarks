@@ -29,7 +29,7 @@ def format_beir_result_keys(beir_results):
 
 
 def build_pisa_index(
-    corpus_records, index_dir, n_threads=-1, stemmer="porter2", keep_stopwords=False, python_str=None, verbose=1, k1=1.2, b=0.75
+    corpus_records, index_dir, n_threads=1, stemmer="porter2", keep_stopwords=False, python_str=None, verbose=1, k1=1.2, b=0.75
 ):
     """
     Build a PISA index from a list of corpus_records.
