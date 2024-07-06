@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import os
+from glob import glob
 from pathlib import Path
 import time
 from typing import Optional
@@ -59,7 +60,10 @@ def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=
     data_dir = Path(save_dir)
     data_path = beir.util.download_and_unzip(url, str(data_dir))
     if dataset == "cqadupstack":
+            # merge and clean up old files
             merge_cqa_dupstack(data_path)
+            for hgx in glob(f'{data_path}/*/*.jsonl'):
+                os.remove(hgx)
     
     if dataset == "msmarco":
         split = "dev"
