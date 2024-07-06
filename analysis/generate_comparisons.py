@@ -8,11 +8,11 @@ def save_as_csv_latex_markdown(df, save_dir, name):
     (save_dir / "latex").mkdir(parents=True, exist_ok=True)
     (save_dir / "markdown").mkdir(parents=True, exist_ok=True)
     
-    df.round(1).to_csv(save_dir / "csv" / f"{name}.csv", index=False)
+    df.to_csv(save_dir / "csv" / f"{name}.csv", index=False)
     print(f"Saved {save_dir}/csv/{name}.csv")
-    df.round(1).to_latex(save_dir / "latex" / f"{name}.tex", float_format="%.1f", index=False)
+    df.to_latex(save_dir / "latex" / f"{name}.tex", float_format="%.1f", index=False)
     print(f"Saved {name}.tex")
-    df.round(1).to_markdown(save_dir / "markdown" / f"{name}.md", index=False, floatfmt=".1f")
+    df.to_markdown(save_dir / "markdown" / f"{name}.md", index=False, floatfmt=".2f")
     print(f"Saved {name}.md")
 
 ERROR_OOM = "Your notebook tried to allocate more memory than is available."
@@ -29,6 +29,7 @@ model_abbreviations = {
     "pyserini": "PSRN",
     "rank-bm25": "Rank",
     "elastic-bm25": "ES",
+    "pisa": "PISA",
 }
 
 
@@ -38,6 +39,7 @@ old_default_params = {
     'bm25-pt': {'k1': 1.5, 'b': 0.75},
     'bm25s': {'k1': 1.5, 'b': 0.75},
     'elastic-bm25': {'k1': 1.5, 'b': 0.75},
+    'pisa': {'k1': 1.2, 'b': 0.75},
 }
 
 # ['arguana', 'climate-fever', 'cqadupstack', 'dbpedia-entity', 'fever',
