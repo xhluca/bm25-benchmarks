@@ -87,6 +87,7 @@ The shorthands used are:
 - `PSRN` for `pyserini`
 - `R-BM25` for `rank-bm25`
 - `ES` for `elasticsearch`
+- `PISA` for the [Pisa Engine](https://github.com/pisa-engine/pisa) (via the [`pyterrier_pisa`](https://github.com/terrierteam/pyterrier_pisa) Python bindings)
 - `OOM` for out-of-memory error
 - `DNT` for did not terminate (i.e. went over 12 hours)
 
