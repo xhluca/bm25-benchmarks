@@ -21,7 +21,8 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 from pyterrier_pisa import PisaIndex
 import pyterrier as pt ; pt.init()
 
-from utils.beir import merge_cqa_dupstack
+from bm25s.utils.benchmark import get_max_memory_usage, Timer
+from bm25s.utils.beir import merge_cqa_dupstack
 
 def format_beir_result_keys(beir_results):
     return {
@@ -108,6 +109,14 @@ def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=
         results[qid][docno] = score
 
     ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(qrels, results, k_values)
+
+
+    max_mem_gb = get_max_memory_usage("GB")
+
+    print("=" * 50)
+    print(f"Max Memory Usage: {max_mem_gb:.4f} GB")
+    print("-" * 50)
+
     print(ndcg)
     print(recall)
     print(precision)
