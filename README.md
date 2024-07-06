@@ -26,23 +26,7 @@ where `<dataset>` is the name of the dataset to be used.
 
 ### Available datasets
 
-The available datasets are public BEIR datasets:
-- `trec-covid`
-- `nfcorpus`
-- `fiqa`
-- `arguana`
-- `webis-touche2020`
-- `quora`
-- `scidocs`
-- `scifact`
-- `cqadupstack`
-- `nq`
-- `msmarco`
-- `hotpotqa`
-- `dbpedia-entity`
-- `fever`
-- `climate-fever`
-
+The available datasets are public BEIR datasets: `trec-covid`, `nfcorpus`, `fiqa`, `arguana`, `webis-touche2020`, `quora`, `scidocs`, `scifact`, `cqadupstack`, `nq`, `msmarco`, `hotpotqa`, `dbpedia-entity`, `fever`, `climate-fever`, 
 ### Sampling during benchmarking
 
 For `rank-bm25`, due to the long runtime, we can sample queries
@@ -208,8 +192,11 @@ The following results follow the same setup as the queries/s benchmarks describe
 
 #### NDCG@10
 
+We use abbreviations for datasets of BEIR benchmarks.
 
-We use the following abbreviations for the datasets:
+<details>
+<summary>Click to show dataset abbreviations</summary>
+
 - `AG` for arguana
 - `CD` for cqadupstack
 - `CF` for climate-fever
@@ -226,6 +213,8 @@ We use the following abbreviations for the datasets:
 - `TC` for trec-covid
 - `WT` for webis-touche2020
 
+</details>
+
 
 |   k1 |   b | method    |   Avg. |   AG | CD   | CF   | DB   |   FQ | FV   | HP   | MS   |   NF | NQ   |   QR |   SD |   SF |   TC | WT   |
 |-----:|----:|:----------|-------:|-----:|:-----|:-----|:-----|-----:|:-----|:-----|:-----|-----:|:-----|-----:|-----:|-----:|-----:|:-----|
@@ -240,6 +229,8 @@ We use the following abbreviations for the datasets:
 |  1.5 | 0.75 | PSRN      |   40.0 | 48.4 | 29.8 | 14.2 | 30.0 | 25.3 | 50.0 | 57.6 | 22.1 | 32.6 | 28.6 | 80.6 | 15.6 | 68.8 | 63.4 | 33.5 |
 |  1.5 | 0.75 | PT        |   45.0 | 44.9 | --   | --   | --   | 22.5 | --   | --   | --   | 31.9 | --   | 75.1 | 14.7 | 67.8 | 58.0 | --   |
 |  1.5 | 0.75 | Rank      |   39.6 | 49.5 | 29.6 | 13.6 | 29.9 | 25.3 | 49.3 | 58.1 | 21.1 | 32.1 | 28.5 | 80.3 | 15.8 | 68.5 | 60.1 | 32.9 |
+|  1.2 | 0.75 | PISA      | 38.8   | 41.2 | 27.8 | 13.8               | 30.6 | 24.6 | 49.1 | 58.1 | 22.6 | 34.4 | 28.2 | 72   | 15.7 | 68.8 | 63.7 | 31.1 |
+
 
 #### Recall@1000
 
@@ -256,6 +247,8 @@ We use the following abbreviations for the datasets:
 |  1.5 | 0.75 | PSRN      |   76.7 | 99.2 | 74.2 | 58.7 | 66.2 | 76.7 | 94.2 | 86.4 | 85.1 | 37.1 | 89.4 | 99.6 | 57.4 | 97.7 | 41.1 | 87.2 |
 |  1.5 | 0.75 | PT        |   73.0 | 98.3 | --   | --   | --   | 72.5 | --   | --   | --   | 51.0 | --   | 98.9 | 56.0 | 97.8 | 36.3 | --   |
 |  1.5 | 0.75 | Rank      |   77.1 | 99.4 | 73.4 | 57.5 | 66.4 | 77.4 | 93.6 | 87.7 | 82.6 | 47.6 | 89.5 | 99.5 | 57.4 | 96.7 | 40.5 | 87.5 |
+|  1.2 | 0.75 | PISA      | 77.1   | 98.8 | 72.2 | 59.8              | 67.6 | 76.4 | 93.7 | 86.8 | 86.9 | 38.7 | 89.1 | 98.9 | 56.9 | 97   | 46   | 87.7 |
+
 
 #### Links
 

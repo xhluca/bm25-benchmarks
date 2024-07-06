@@ -61,6 +61,7 @@ model_abbreviations = {
     "pyserini": "PSRN",
     "rank-bm25": "Rank",
     "elastic-bm25": "ES",
+    "pisa": "PISA",
 }
 
 removed_models = [
