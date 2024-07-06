@@ -111,6 +111,30 @@ def main(
         timer.stop(t, show=True, n_total=len(queries_lst))
 
     ############## BENCHMARKING BEIR HERE ##############
+
+    ### NEW: Inverted index
+
+    print("Building inverted index...")
+    inverted_index = bm25s.inverted_index.build_inverted_index(corpus_tokenized)
+    relevant_query_indices = bm25s.inverted_index.select_relevant_indices(
+        queries_tokenized, inverted_index=inverted_index, corpus_vocab=corpus_tokenized.vocab
+    )
+    print("Done building inverted index.")
+
+    t = timer.start("Query with Inverted Index")
+    queried_results, queried_scores = model.retrieve(
+        queries_tokenized,
+        corpus=corpus_ids,
+        k=top_k,
+        return_as="tuple",
+        n_threads=n_threads,
+        backend_selection="numpy",
+        relevant_indices=relevant_query_indices,
+    )
+    timer.stop(t, show=True, n_total=len(queries_lst))
+
+    ### END NEW
+
     t = timer.start("Query")
     queried_results, queried_scores = model.retrieve(
         queries_tokenized,
