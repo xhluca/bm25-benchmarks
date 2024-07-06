@@ -26,23 +26,7 @@ where `<dataset>` is the name of the dataset to be used.
 
 ### Available datasets
 
-The available datasets are public BEIR datasets:
-- `trec-covid`
-- `nfcorpus`
-- `fiqa`
-- `arguana`
-- `webis-touche2020`
-- `quora`
-- `scidocs`
-- `scifact`
-- `cqadupstack`
-- `nq`
-- `msmarco`
-- `hotpotqa`
-- `dbpedia-entity`
-- `fever`
-- `climate-fever`
-
+The available datasets are public BEIR datasets: `trec-covid`, `nfcorpus`, `fiqa`, `arguana`, `webis-touche2020`, `quora`, `scidocs`, `scifact`, `cqadupstack`, `nq`, `msmarco`, `hotpotqa`, `dbpedia-entity`, `fever`, `climate-fever`, 
 ### Sampling during benchmarking
 
 For `rank-bm25`, due to the long runtime, we can sample queries
@@ -208,8 +192,11 @@ The following results follow the same setup as the queries/s benchmarks describe
 
 #### NDCG@10
 
+We use abbreviations for datasets of BEIR benchmarks.
 
-We use the following abbreviations for the datasets:
+<details>
+<summary>Click to show dataset abbreviations</summary>
+
 - `AG` for arguana
 - `CD` for cqadupstack
 - `CF` for climate-fever
@@ -225,6 +212,8 @@ We use the following abbreviations for the datasets:
 - `SF` for scifact
 - `TC` for trec-covid
 - `WT` for webis-touche2020
+
+</details>
 
 
 |   k1 |   b | method    |   Avg. |   AG | CD   | CF   | DB   |   FQ | FV   | HP   | MS   |   NF | NQ   |   QR |   SD |   SF |   TC | WT   |
