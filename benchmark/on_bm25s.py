@@ -70,7 +70,7 @@ def main(
     stemmer_name = None if stemmer_name == "none" else stemmer_name
     stopwords = None if stopwords == "none" else stopwords
     stemmer = Stemmer.Stemmer("english") if stemmer_name == "snowball" else None
-    
+
     timer = Timer("[BM25S]")
     t = timer.start("Tokenize Corpus")
     corpus_tokenized = bm25s.tokenize(
@@ -103,7 +103,7 @@ def main(
     model = bm25s.BM25(method=method, k1=k1, b=b, delta=delta)
     model.index((corpus_tokenized.ids, corpus_tokenized.vocab), leave_progress=False)
     timer.stop(t, show=True, n_total=num_docs)
-    
+
     if not skip_scoring:
         t = timer.start("Score")
         for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
@@ -117,7 +117,10 @@ def main(
     print("Building inverted index...")
     inverted_index = bm25s.inverted_index.build_inverted_index(corpus_tokenized)
     relevant_query_indices = bm25s.inverted_index.select_relevant_indices(
-        queries_tokenized, inverted_index=inverted_index, corpus_vocab=corpus_tokenized.vocab
+        queries_tokenized,
+        inverted_index=inverted_index,
+        corpus_vocab=corpus_tokenized.vocab,
+        return_as="numpy",
     )
     print("Done building inverted index.")
 
@@ -312,7 +315,6 @@ if __name__ == "__main__":
         action="store_true",
         help="Skip numpy retrieval step.",
     )
-
 
     kwargs = vars(parser.parse_args())
     profile = kwargs.pop("profile")
