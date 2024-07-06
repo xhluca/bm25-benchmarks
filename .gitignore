@@ -168,3 +168,6 @@ elasticsearch-*/
 multicore_results/
 analysis/out/multicore
 venv-*
+comparison_results
+analysis/out
+analysis/comparison_results
