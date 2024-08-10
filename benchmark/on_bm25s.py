@@ -135,9 +135,22 @@ def main(
         )
         timer.stop(t, show=True, n_total=len(queries_lst))
 
+        t = timer.start("Query np nz")
+        queried_results_nz, queried_scores_np_nz = model.retrieve(
+            queries_tokenized,
+            corpus=corpus_ids,
+            k=top_k,
+            return_as="tuple",
+            n_threads=n_threads,
+            backend_selection="numpy_nz",
+            sorted=True,
+        )
+        timer.stop(t, show=True, n_total=len(queries_lst))
+
         # verify that both results are the same
         assert queried_scores.shape == queried_scores_np.shape
         assert np.allclose(queried_scores, queried_scores_np, atol=1e-6)
+        assert np.allclose(queried_scores_np, queried_scores_np_nz, atol=1e-6)
 
     results_dict = postprocess_results_for_eval(queried_results, queried_scores, qids)
     ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(
