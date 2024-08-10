@@ -122,6 +122,18 @@ def main(
     )
     timer.stop(t, show=True, n_total=len(queries_lst))
 
+    t = timer.start("Query nz")
+    queried_results_nz, queried_scores_nz = model.retrieve(
+        queries_tokenized,
+        corpus=corpus_ids,
+        k=top_k,
+        return_as="tuple",
+        n_threads=n_threads,
+        backend_selection="jax_nz",
+    )
+    timer.stop(t, show=True, n_total=len(queries_lst))
+    assert np.allclose(queried_scores, queried_scores_nz, atol=1e-6)
+
     if not skip_numpy_retrieval:
         t = timer.start("Query np")
         queried_results, queried_scores_np = model.retrieve(
@@ -136,7 +148,7 @@ def main(
         timer.stop(t, show=True, n_total=len(queries_lst))
 
         t = timer.start("Query np nz")
-        queried_results_nz, queried_scores_np_nz = model.retrieve(
+        queried_results_np_nz, queried_scores_np_nz = model.retrieve(
             queries_tokenized,
             corpus=corpus_ids,
             k=top_k,
