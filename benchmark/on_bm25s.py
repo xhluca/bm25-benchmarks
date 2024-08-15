@@ -20,6 +20,33 @@ from bm25s.utils.beir import (
     postprocess_results_for_eval,
 )
 
+def _compute_relevance_from_scores_legacy(
+    data, indptr, indices, num_docs, query_tokens_ids, dtype
+):
+    # First, we use the query_token_ids to select the relevant columns from the score_matrix
+    query_tokens_ids = np.array(query_tokens_ids, dtype=int)
+    indptr_starts = indptr[query_tokens_ids]
+    indptr_ends = indptr[query_tokens_ids + 1]
+
+    scores_lists = []
+    indices_lists = []
+
+    for i, (start, end) in enumerate(zip(indptr_starts, indptr_ends)):
+        scores_lists.append(data[start:end])
+        indices_lists.append(indices[start:end])
+
+    # combine the lists into a single array
+
+    scores = np.zeros(num_docs, dtype=dtype)
+    if len(scores_lists) == 0:
+        return scores
+
+    scores_flat = np.concatenate(scores_lists)
+    indices_flat = np.concatenate(indices_lists)
+    np.add.at(scores, indices_flat, scores_flat)
+
+    return scores
+
 
 def main(
     dataset,
@@ -115,6 +142,19 @@ def main(
     model.get_scores(queries_tokenized[0])
 
     if not skip_scoring:
+        _compute_relevance_from_scores_jit = model._compute_relevance_from_scores
+        model._compute_relevance_from_scores = _compute_relevance_from_scores_legacy
+
+        t = timer.start("Score (legacy)")
+        for q in tqdm(queries_tokenized, desc="BM25S Scoring (legacy)", leave=False):
+            model.get_scores(q)
+        timer.stop(t, show=True, n_total=len(queries_lst))
+
+        # revert back to jit version
+        model._compute_relevance_from_scores = _compute_relevance_from_scores_jit
+        # warmup
+        model.get_scores(queries_tokenized[0])
+        
         t = timer.start("Score")
         for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
             model.get_scores(q)
