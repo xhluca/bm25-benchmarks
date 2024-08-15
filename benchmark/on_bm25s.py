@@ -138,11 +138,12 @@ def main(
     timer.stop(t, show=True, n_total=num_docs)
     
     # Use njit and warmup
-    model._compute_relevance_from_scores = njit(model._compute_relevance_from_scores)
+    _compute_relevance_from_scores_np = model._compute_relevance_from_scores
+    _compute_relevance_from_scores_jit = njit(model._compute_relevance_from_scores)
+    model._compute_relevance_from_scores = _compute_relevance_from_scores_jit
     model.get_scores(queries_tokenized[0])
 
     if not skip_scoring:
-        _compute_relevance_from_scores_jit = model._compute_relevance_from_scores
         model._compute_relevance_from_scores = _compute_relevance_from_scores_legacy
 
         t = timer.start("Score (legacy)")
@@ -150,15 +151,23 @@ def main(
             model.get_scores(q)
         timer.stop(t, show=True, n_total=len(queries_lst))
 
+        model._compute_relevance_from_scores = _compute_relevance_from_scores_np
+        t = timer.start("Score (numpy)")
+        for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
+            model.get_scores(q)
+        timer.stop(t, show=True, n_total=len(queries_lst))
+
         # revert back to jit version
         model._compute_relevance_from_scores = _compute_relevance_from_scores_jit
         # warmup
         model.get_scores(queries_tokenized[0])
-        
-        t = timer.start("Score")
+        t = timer.start("Score (njit)")
         for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
             model.get_scores(q)
         timer.stop(t, show=True, n_total=len(queries_lst))
+
+        # revert back to jit version
+        model._compute_relevance_from_scores = _compute_relevance_from_scores_jit
 
     ############## BENCHMARKING BEIR HERE ##############
     t = timer.start("Query")
