@@ -9,6 +9,7 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 import numpy as np
 from tqdm.auto import tqdm
 import Stemmer
+from numba import njit
 
 import bm25s
 from bm25s.utils.benchmark import get_max_memory_usage, Timer
@@ -109,12 +110,11 @@ def main(
     model.index((corpus_tokenized.ids, corpus_tokenized.vocab), leave_progress=False)
     timer.stop(t, show=True, n_total=num_docs)
     
-    # warmup
-    q = queries_tokenized[0]
-    model.get_scores(q)
+    # Use njit and warmup
+    model._compute_relevance_from_scores = njit(model._compute_relevance_from_scores)
+    model.get_scores(queries_tokenized[0])
 
     if not skip_scoring:
-
         t = timer.start("Score")
         for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
             model.get_scores(q)
