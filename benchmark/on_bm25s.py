@@ -151,11 +151,11 @@ def main(
             model.get_scores(q)
         timer.stop(t, show=True, n_total=len(queries_lst))
 
-        model._compute_relevance_from_scores = _compute_relevance_from_scores_np
-        t = timer.start("Score (numpy)")
-        for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
-            model.get_scores(q)
-        timer.stop(t, show=True, n_total=len(queries_lst))
+        # model._compute_relevance_from_scores = _compute_relevance_from_scores_np
+        # t = timer.start("Score (numpy)")
+        # for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
+        #     model.get_scores(q)
+        # timer.stop(t, show=True, n_total=len(queries_lst))
 
         # revert back to jit version
         model._compute_relevance_from_scores = _compute_relevance_from_scores_jit
