@@ -111,7 +111,7 @@ def main(
     timer.stop(t, show=True, n_total=num_docs)
     
     if not skip_scoring:
-        t = timer.start("Score (default)")
+        t = timer.start("Score")
         for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
             model.get_scores(q)
         timer.stop(t, show=True, n_total=len(queries_lst))
@@ -127,7 +127,7 @@ def main(
         model.get_scores(queries_tokenized[0])
 
         t = timer.start("Score (jit)")
-        for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
+        for q in tqdm(queries_tokenized, desc="BM25S Scoring (jit)", leave=False):
             model.get_scores(q)
         timer.stop(t, show=True, n_total=len(queries_lst))
     
