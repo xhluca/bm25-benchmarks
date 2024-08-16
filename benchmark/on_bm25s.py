@@ -136,6 +136,7 @@ def main(
     model.get_scores(queries_tokenized[0])
 
     ############## BENCHMARKING BEIR HERE ##############
+
     t = timer.start("Query")
     queried_results, queried_scores = model.retrieve(
         queries_tokenized,
@@ -150,7 +151,7 @@ def main(
     if not skip_numpy_retrieval:
         # warmup
         model.retrieve(queries_tokenized[0:2], backend_selection="numba_sorted")
-        t = timer.start("Query numba_sorted")
+        t = timer.start("Query numba")
         queried_results_nbs, queried_scores_nbs = model.retrieve(
             queries_tokenized,
             corpus=corpus_ids,
@@ -161,7 +162,6 @@ def main(
             sorted=True,
         )
         timer.stop(t, show=True, n_total=len(queries_lst))
-        
 
         t = timer.start("Query numpy")
         queried_results, queried_scores_np = model.retrieve(
