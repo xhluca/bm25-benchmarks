@@ -148,20 +148,20 @@ def main(
     timer.stop(t, show=True, n_total=len(queries_lst))
 
     if not skip_numpy_retrieval:
-        # # warmup
-        # model.retrieve(queries_tokenized[0:2], backend_selection="numba")
+        # warmup
+        model.retrieve(queries_tokenized[0:2], backend_selection="numba_sorted")
+        t = timer.start("Query numba_sorted")
+        queried_results_nbs, queried_scores_nbs = model.retrieve(
+            queries_tokenized,
+            corpus=corpus_ids,
+            k=top_k,
+            return_as="tuple",
+            n_threads=n_threads,
+            backend_selection="numba_sorted",
+            sorted=True,
+        )
+        timer.stop(t, show=True, n_total=len(queries_lst))
         
-        # t = timer.start("Query numba")
-        # queried_results_nb, queried_scores_nb = model.retrieve(
-        #     queries_tokenized,
-        #     corpus=corpus_ids,
-        #     k=top_k,
-        #     return_as="tuple",
-        #     n_threads=n_threads,
-        #     backend_selection="numba",
-        #     sorted=True,
-        # )
-        # timer.stop(t, show=True, n_total=len(queries_lst))
 
         t = timer.start("Query numpy")
         queried_results, queried_scores_np = model.retrieve(
@@ -178,7 +178,7 @@ def main(
         # verify that both results are the same
         assert queried_scores.shape == queried_scores_np.shape
         assert np.allclose(queried_scores, queried_scores_np, atol=1e-6)
-        # assert np.allclose(queried_scores, queried_scores_nb, atol=1e-6)
+        assert np.allclose(queried_scores_nbs, queried_scores_np, atol=1e-6)
 
     results_dict = postprocess_results_for_eval(queried_results, queried_scores, qids)
     ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(
