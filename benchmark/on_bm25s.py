@@ -150,7 +150,7 @@ def main(
 
     if not skip_numpy_retrieval:
         # warmup
-        model.retrieve(queries_tokenized[0:2], backend_selection="numba_sorted")
+        model.retrieve(queries_tokenized[0:2], backend_selection="numba")
         t = timer.start("Query numba")
         queried_results_nbs, queried_scores_nbs = model.retrieve(
             queries_tokenized,
@@ -158,7 +158,7 @@ def main(
             k=top_k,
             return_as="tuple",
             n_threads=n_threads,
-            backend_selection="numba_sorted",
+            backend_selection="numba",
             sorted=True,
         )
         timer.stop(t, show=True, n_total=len(queries_lst))
