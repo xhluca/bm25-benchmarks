@@ -180,6 +180,9 @@ def main(
         assert np.allclose(queried_scores, queried_scores_np, atol=1e-6)
         assert np.allclose(queried_scores_nbs, queried_scores_np, atol=1e-6)
 
+        queried_results = queried_results_nbs
+        queried_scores = queried_scores_nbs
+    
     results_dict = postprocess_results_for_eval(queried_results, queried_scores, qids)
     ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(
         qrels, results_dict, [1, 10, 100, 1000]
