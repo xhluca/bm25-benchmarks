@@ -2,5 +2,5 @@ beir
 git+https://github.com/dorianbrown/rank_bm25@1abce6cb8bd4a4961f0958391b3eabb749483c01
 PyStemmer
 ujson
-bm25s[core]
+bm25s[core]>=0.2.0rc1
 numba
