@@ -80,10 +80,17 @@ results_processed = []
 
 # Process them
 for r in results:
+    if r['n_threads'] > 1 or r['n_threads'] == -1:
+        continue
+
     index_time_total = r["timing"]["index"]["elapsed"]
     query_time_total = r["timing"]["query"]["elapsed"]
-    if r['timing'].get('query_np') is not None:
-        query_time_total = min(query_time_total, r['timing']['query_np']['elapsed'])
+
+    if r['timing'].get('query_numba') is not None:
+        query_time_total = min(query_time_total, r['timing']['query_numba']['elapsed'])
+
+    if r['timing'].get('query_numpy') is not None:
+        query_time_total = min(query_time_total, r['timing']['query_numpy']['elapsed'])
 
     if "tokenize_corpus" in r["timing"]:
         index_time_total += r["timing"]["tokenize_corpus"]["elapsed"]

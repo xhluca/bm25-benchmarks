@@ -9,6 +9,7 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 import numpy as np
 from tqdm.auto import tqdm
 import Stemmer
+from numba import njit
 
 import bm25s
 from bm25s.utils.benchmark import get_max_memory_usage, Timer
@@ -72,17 +73,6 @@ def main(
     stemmer = Stemmer.Stemmer("english") if stemmer_name == "snowball" else None
     
     timer = Timer("[BM25S]")
-    t = timer.start("Tokenize Corpus")
-    corpus_tokenized = bm25s.tokenize(
-        corpus_lst,
-        stopwords=stopwords,
-        stemmer=stemmer,
-        leave=False,
-        return_ids=True,
-    )
-    timer.stop(t, show=True, n_total=num_docs)
-
-    del corpus_lst
 
     t = timer.start("Tokenize Queries")
     queries_tokenized = bm25s.tokenize(
@@ -94,9 +84,25 @@ def main(
     )
     timer.stop(t, show=True, n_total=len(queries_lst))
 
+    t = timer.start("Tokenize Corpus")
+    corpus_tokenized = bm25s.tokenize(
+        corpus_lst,
+        stopwords=stopwords,
+        stemmer=stemmer,
+        leave=False,
+        return_ids=True,
+    )
+    timer.stop(t, show=True, n_total=num_docs)
+
+    del corpus_lst
+    
+
     num_tokens = sum(len(doc) for doc in corpus_tokenized.ids)
-    print(f"Number of Tokens: {num_tokens:,}")
+    num_query_tokens = sum(len(q) for q in queries_tokenized)
+    num_queries = len(queries_lst)
+    print(f"Number of Corpus Tokens: {num_tokens:,}")
     print(f"Number of Tokens / Doc: {num_tokens / num_docs:.2f}")
+    print(f"Number of Tokens / Query: {num_query_tokens / num_queries:.2f}")
     print("-" * 50)
 
     t = timer.start("Index")
@@ -110,7 +116,27 @@ def main(
             model.get_scores(q)
         timer.stop(t, show=True, n_total=len(queries_lst))
 
+        model._compute_relevance_from_scores = bm25s.scoring._compute_relevance_from_scores_legacy
+        t = timer.start("Score (legacy)")
+        for q in tqdm(queries_tokenized, desc="BM25S Scoring (legacy)", leave=False):
+            model.get_scores(q)
+        timer.stop(t, show=True, n_total=len(queries_lst))
+
+        # Use njit and warmup
+        model._compute_relevance_from_scores = njit(bm25s.scoring._compute_relevance_from_scores_jit_ready)
+        model.get_scores(queries_tokenized[0])
+
+        t = timer.start("Score (jit)")
+        for q in tqdm(queries_tokenized, desc="BM25S Scoring (jit)", leave=False):
+            model.get_scores(q)
+        timer.stop(t, show=True, n_total=len(queries_lst))
+    
+    # Use njit and warmup
+    model._compute_relevance_from_scores = njit(bm25s.scoring._compute_relevance_from_scores_jit_ready)
+    model.get_scores(queries_tokenized[0])
+
     ############## BENCHMARKING BEIR HERE ##############
+
     t = timer.start("Query")
     queried_results, queried_scores = model.retrieve(
         queries_tokenized,
@@ -123,7 +149,21 @@ def main(
     timer.stop(t, show=True, n_total=len(queries_lst))
 
     if not skip_numpy_retrieval:
-        t = timer.start("Query np")
+        # warmup
+        model.retrieve(queries_tokenized[0:2], backend_selection="numba")
+        t = timer.start("Query numba")
+        queried_results_nbs, queried_scores_nbs = model.retrieve(
+            queries_tokenized,
+            corpus=corpus_ids,
+            k=top_k,
+            return_as="tuple",
+            n_threads=n_threads,
+            backend_selection="numba",
+            sorted=True,
+        )
+        timer.stop(t, show=True, n_total=len(queries_lst))
+
+        t = timer.start("Query numpy")
         queried_results, queried_scores_np = model.retrieve(
             queries_tokenized,
             corpus=corpus_ids,
@@ -138,7 +178,11 @@ def main(
         # verify that both results are the same
         assert queried_scores.shape == queried_scores_np.shape
         assert np.allclose(queried_scores, queried_scores_np, atol=1e-6)
+        assert np.allclose(queried_scores_nbs, queried_scores_np, atol=1e-6)
 
+        queried_results = queried_results_nbs
+        queried_scores = queried_scores_nbs
+    
     results_dict = postprocess_results_for_eval(queried_results, queried_scores, qids)
     ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(
         qrels, results_dict, [1, 10, 100, 1000]
