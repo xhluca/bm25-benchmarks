@@ -55,6 +55,7 @@ def main(
         corpus_ids.append(key)
         corpus_lst.append(val["title"] + " " + val["text"])
 
+    corpus_ids = np.array(corpus_ids)
     del corpus
 
     qids, queries_lst = [], []
@@ -150,9 +151,9 @@ def main(
 
     if not skip_numpy_retrieval:
         # warmup
-        model.retrieve(queries_tokenized[0:2], backend_selection="numba")
+        model.retrieve_numba(queries_tokenized[0:2], sorted=True, show_progress=False)
         t = timer.start("Query numba")
-        queried_results_nbs, queried_scores_nbs = model.retrieve(
+        queried_results_nbs, queried_scores_nbs = model.retrieve_numba(
             queries_tokenized,
             corpus=corpus_ids,
             k=top_k,
