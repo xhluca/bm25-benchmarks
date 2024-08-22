@@ -18,13 +18,17 @@ output_base_dir = Path("./multicore_results")
 
 # use temp folder to store results
 methods_to_nb_name = {
-    "bm25s": [
-        "run-bm25s-multicore",
-        "run-bm25s-multicore-msmarco",
-    ],
+    # "bm25s": [
+    #     "xhlulu/run-bm25s-multicore",
+    #     "xhlulu/run-bm25s-multicore-msmarco",
+    # ],
     "elasticsearch": [
-        "run-elasticsearch-multicore",
+        "xhlulu/run-elasticsearch-multicore",
     ],
+    # "bm25s_jit": [
+    #     "xhlulu/benchmark-bm25s-numba-4t-rest",
+    #     "xhlulu/benchmark-bm25s-numba-4t-sub-1m",
+    # ],
 }
 
 
@@ -37,7 +41,7 @@ for method, notebook_names in methods_to_nb_name.items():
         output_dir = output_base_dir / method
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        notebook_name = f"{username}/{name}"
+        notebook_name = name
 
         try:
             status = api.kernels_status(notebook_name)

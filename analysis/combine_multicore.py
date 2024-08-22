@@ -39,8 +39,11 @@ results_processed = []
 for r in results:
     index_time_total = r["timing"]["index"]["elapsed"]
     query_time_total = r["timing"]["query"]["elapsed"]
-    if r['timing'].get('query_np') is not None:
-        query_time_total = min(query_time_total, r['timing']['query_np']['elapsed'])
+    if r['timing'].get('query_numpy') is not None:
+        query_time_total = min(query_time_total, r['timing']['query_numpy']['elapsed'])
+
+    if r['timing'].get('query_numba') is not None:
+        query_time_total = min(query_time_total, r['timing']['query_numba']['elapsed'])
 
     if "tokenize_corpus" in r["timing"]:
         index_time_total += r["timing"]["tokenize_corpus"]["elapsed"]

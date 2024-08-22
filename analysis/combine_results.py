@@ -12,48 +12,48 @@ results_base_dir = Path("./results")
 
 # Go through all the methods and datasets and combine the results
 
-methods_to_datasets = {
-    "bm25-pt": [
-        "sub-1m",
-        "cqadupstack",
-        "webis-touche2020",
-        "nq",  # 2M
-        "msmarco",  # 8.8M
-        "hotpotqa",  # 5.2M
-        "dbpedia-entity",  # 4.6M
-        "fever",  # 5.4M
-        "climate-fever",  # 5.4M
-    ],
-    "pyserini": [
-        "sub-1m",
-        "cqadupstack",
-        "nq",  # 2M
-        "msmarco",  # 8.8M
-        "hotpotqa",  # 5.2M
-        "dbpedia-entity",  # 4.6M
-        "fever",  # 5.4M
-        "climate-fever",  # 5.4M
-    ],
-    "rank-bm25": [
-        "sub-1m",
-        "cqadupstack",
-        "nq",  # 2M
-        "msmarco",  # 8.8M
-        "hotpotqa",  # 5.2M
-        "dbpedia-entity",  # 4.6M
-        "fever",  # 5.4M
-        "climate-fever",  # 5.4M
-    ],
-    "bm25s": [
-        "sub-1m",
-        "nq",  # 2M
-        "msmarco",  # 8.8M
-        "hotpotqa",  # 5.2M
-        "dbpedia-entity",  # 4.6M
-        "fever",  # 5.4M
-        "climate-fever",  # 5.4M
-    ],
-}
+# methods_to_datasets = {
+#     "bm25-pt": [
+#         "sub-1m",
+#         "cqadupstack",
+#         "webis-touche2020",
+#         "nq",  # 2M
+#         "msmarco",  # 8.8M
+#         "hotpotqa",  # 5.2M
+#         "dbpedia-entity",  # 4.6M
+#         "fever",  # 5.4M
+#         "climate-fever",  # 5.4M
+#     ],
+#     "pyserini": [
+#         "sub-1m",
+#         "cqadupstack",
+#         "nq",  # 2M
+#         "msmarco",  # 8.8M
+#         "hotpotqa",  # 5.2M
+#         "dbpedia-entity",  # 4.6M
+#         "fever",  # 5.4M
+#         "climate-fever",  # 5.4M
+#     ],
+#     "rank-bm25": [
+#         "sub-1m",
+#         "cqadupstack",
+#         "nq",  # 2M
+#         "msmarco",  # 8.8M
+#         "hotpotqa",  # 5.2M
+#         "dbpedia-entity",  # 4.6M
+#         "fever",  # 5.4M
+#         "climate-fever",  # 5.4M
+#     ],
+#     "bm25s": [
+#         "sub-1m",
+#         "nq",  # 2M
+#         "msmarco",  # 8.8M
+#         "hotpotqa",  # 5.2M
+#         "dbpedia-entity",  # 4.6M
+#         "fever",  # 5.4M
+#         "climate-fever",  # 5.4M
+#     ],
+# }
 
 model_abbreviations = {
     "bm25s": "BM25S",
@@ -62,6 +62,8 @@ model_abbreviations = {
     "rank-bm25": "Rank",
     "elastic-bm25": "ES",
     "pisa": "PISA",
+    "retriv": "RV",
+    "bm25s_jit": "BM25S+J",
 }
 
 removed_models = [
@@ -174,7 +176,7 @@ qps_df_std = df.pivot(index="dataset", columns="model", values="qps_std").round(
 # make a table for dps
 dps_df = df.pivot(index="dataset", columns="model", values="dps").round(2)
 
-stats_df = pd.DataFrame(results_stats).T.map(lambda x: f"{x:,}")
+# stats_df = pd.DataFrame(results_stats).T.map(lambda x: f"{x:,}")
 
 # save everything as csv, markdown and latex
 save_dir = Path("analysis/out")
@@ -206,9 +208,9 @@ dps_df.to_csv(save_dir / "csv" / "dps.csv")
 dps_df.to_markdown(save_dir / "markdown" / "dps.md")
 dps_df.to_latex(save_dir / 'latex' / "dps.tex", float_format="%.2f")
 
-stats_df.to_csv(save_dir / "csv" / "stats.csv")
-stats_df.to_markdown(save_dir / "markdown" / "stats.md")
-stats_df.to_latex(save_dir  / 'latex' / "stats.tex", float_format="%.4f")
+# stats_df.to_csv(save_dir / "csv" / "stats.csv")
+# stats_df.to_markdown(save_dir / "markdown" / "stats.md")
+# stats_df.to_latex(save_dir  / 'latex' / "stats.tex", float_format="%.4f")
 
 ndcg_df.to_csv(save_dir / "csv" / "ndcg.csv")
 ndcg_df.to_markdown(save_dir / "markdown" / "ndcg.md")
