@@ -75,15 +75,6 @@ def main(
     
     timer = Timer("[BM25S]")
 
-    t = timer.start("Tokenize Queries")
-    queries_tokenized = bm25s.tokenize(
-        queries_lst,
-        stopwords=stopwords,
-        stemmer=stemmer,
-        leave=False,
-        return_ids=False,
-    )
-    timer.stop(t, show=True, n_total=len(queries_lst))
 
     t = timer.start("Tokenize Corpus")
     corpus_tokenized = bm25s.tokenize(
@@ -94,6 +85,28 @@ def main(
         return_ids=True,
     )
     timer.stop(t, show=True, n_total=num_docs)
+
+    t = timer.start("Tokenize Queries with vocab")
+    queries_tokens = bm25s.tokenization._tokenize_with_vocab_exp(
+        queries_lst,
+        stopwords=stopwords,
+        leave=False,
+        vocab_dict=corpus_tokenized.vocab,
+    )
+    queries_tokenized = bm25s.tokenization.Tokenized(
+        ids=queries_tokens, vocab=corpus_tokenized.vocab
+    )
+    timer.stop(t, show=True, n_total=len(queries_lst))
+
+    t = timer.start("Tokenize Queries")
+    queries_tokenized = bm25s.tokenize(
+        queries_lst,
+        stopwords=stopwords,
+        stemmer=stemmer,
+        leave=False,
+        return_ids=False,
+    )
+    timer.stop(t, show=True, n_total=len(queries_lst))
 
     del corpus_lst
     
