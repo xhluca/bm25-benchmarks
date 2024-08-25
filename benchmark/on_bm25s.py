@@ -86,14 +86,14 @@ def main(
     )
     timer.stop(t, show=True, n_total=num_docs)
 
-    t = timer.start("Tokenize Queries with vocab")
-    queries_tokens_ids = bm25s.tokenization._tokenize_with_vocab_exp(
-        queries_lst,
-        stopwords=stopwords,
-        leave=False,
-        vocab_dict=corpus_tokenized.vocab,
-    )
-    timer.stop(t, show=True, n_total=len(queries_lst))
+    # t = timer.start("Tokenize Queries with vocab")
+    # queries_tokens_ids = bm25s.tokenization._tokenize_with_vocab_exp(
+    #     queries_lst,
+    #     stopwords=stopwords,
+    #     leave=False,
+    #     vocab_dict=corpus_tokenized.vocab,
+    # )
+    # timer.stop(t, show=True, n_total=len(queries_lst))
 
     t = timer.start("Tokenize Queries")
     queries_tokenized = bm25s.tokenize(
