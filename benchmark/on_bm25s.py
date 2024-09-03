@@ -120,7 +120,8 @@ def main(
     model = bm25s.BM25(method=method, k1=k1, b=b, delta=delta)
     model.index((corpus_tokenized.ids, corpus_tokenized.vocab), leave_progress=False)
     timer.stop(t, show=True, n_total=num_docs)
-    
+    _compute_relevance_from_scores = model._compute_relevance_from_scores
+
     if not skip_scoring:
         t = timer.start("Score")
         for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
@@ -134,7 +135,7 @@ def main(
         timer.stop(t, show=True, n_total=len(queries_lst))
 
         # Use njit and warmup
-        model._compute_relevance_from_scores = njit(bm25s.scoring._compute_relevance_from_scores_jit_ready)
+        model.activate_numba_scorer()
         model.get_scores(queries_tokenized[0])
 
         t = timer.start("Score (jit)")
@@ -143,8 +144,10 @@ def main(
         timer.stop(t, show=True, n_total=len(queries_lst))
     
     # Use njit and warmup
-    model._compute_relevance_from_scores = njit(bm25s.scoring._compute_relevance_from_scores_jit_ready)
+    model.activate_numba_scorer()
     model.get_scores(queries_tokenized[0])
+    # # reset back to original
+    # model._compute_relevance_from_scores = _compute_relevance_from_scores
 
     ############## BENCHMARKING BEIR HERE ##############
 
@@ -160,17 +163,19 @@ def main(
     timer.stop(t, show=True, n_total=len(queries_lst))
 
     # warmup
-    model.retrieve_numba(queries_tokenized[0:2], sorted=True, show_progress=False)
+    model.backend = "numba"
+    model.retrieve(queries_tokenized[0:2], sorted=True)
     t = timer.start("Query numba")
-    queried_results_nbs, queried_scores_nbs = model.retrieve_numba(
-        queries_tokenized,
+    queried_results_nbs, queried_scores_nbs = model.retrieve(
+        query_tokens=queries_tokenized,
         corpus=corpus_ids,
         k=top_k,
         return_as="tuple",
         n_threads=n_threads,
-        backend_selection="numba",
         sorted=True,
     )
+    model.backend = "numpy"
+    
     timer.stop(t, show=True, n_total=len(queries_lst))
     assert np.allclose(queried_scores, queried_scores_nbs, atol=1e-6)
 
