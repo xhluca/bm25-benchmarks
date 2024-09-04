@@ -82,11 +82,11 @@ def main(
     )
 
     t = timer.start("Tokenize Corpus (class)")
-    corpus_tokens_ids = tokenizer.tokenize(corpus_lst)
+    corpus_tokenized_cls = tokenizer.tokenize(corpus_lst, update_vocab=True, return_as="tuple")
     timer.stop(t, show=True, n_total=num_docs)
 
     t = timer.start("Tokenize Queries (class)")
-    queries_tokens_ids = tokenizer.tokenize(queries_lst, update_vocab=False)
+    queries_ids = tokenizer.tokenize(queries_lst, update_vocab=False, return_as="ids")
     timer.stop(t, show=True, n_total=len(queries_lst))
 
 
@@ -122,7 +122,8 @@ def main(
 
     t = timer.start("Index")
     model = bm25s.BM25(method=method, k1=k1, b=b, delta=delta)
-    model.index((corpus_tokenized.ids, corpus_tokenized.vocab), leave_progress=False)
+    # model.index((corpus_tokenized.ids, corpus_tokenized.vocab), leave_progress=False)
+    model.index(corpus_tokenized_cls, leave_progress=False)
     timer.stop(t, show=True, n_total=num_docs)
     _compute_relevance_from_scores = model._compute_relevance_from_scores
 
@@ -154,6 +155,9 @@ def main(
     # model._compute_relevance_from_scores = _compute_relevance_from_scores
 
     ############## BENCHMARKING BEIR HERE ##############
+    # for v1, v2 in zip(queries_ids, queries_tokenized):
+    #     if v1 != v2 and np.any(model.get_scores(v1) != model.get_scores(v2)):
+    #         breakpoint()
 
     t = timer.start("Query")
     queried_results, queried_scores = model.retrieve(
@@ -168,20 +172,22 @@ def main(
 
     # warmup
     model.backend = "numba"
-    model.retrieve(queries_tokenized[0:2], sorted=True)
+    # model.retrieve(queries_tokenized[0:2], sorted=True)
+    model.retrieve(queries_ids[:2])
     t = timer.start("Query numba")
     queried_results_nbs, queried_scores_nbs = model.retrieve(
-        query_tokens=queries_tokenized,
+        # query_tokens=queries_tokenized,
+        query_tokens=queries_ids,
         corpus=corpus_ids,
         k=top_k,
         return_as="tuple",
-        n_threads=n_threads,
-        sorted=True,
+        n_threads=n_threads
     )
-    model.backend = "numpy"
-    
+
     timer.stop(t, show=True, n_total=len(queries_lst))
     assert np.allclose(queried_scores, queried_scores_nbs, atol=1e-6)
+
+    model.backend = "numpy"
 
     if not skip_numpy_retrieval:
         t = timer.start("Query numpy")
