@@ -38,7 +38,7 @@ def main(
     skip_numpy_retrieval=False,
 ):
     #### Download dataset and unzip the dataset
-    data_path = beir.util.download_and_unzip(GH_URL.format(dataset), save_dir)
+    data_path = beir.util.download_and_unzip(BASE_URL.format(dataset), save_dir)
 
     if dataset == "cqadupstack":
         merge_cqa_dupstack(data_path)
