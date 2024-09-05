@@ -86,18 +86,25 @@ for r in results:
         continue
 
     index_time_total = r["timing"]["index"]["elapsed"]
+    
+    # default:
     query_time_total = r["timing"]["query"]["elapsed"]
 
     if r['timing'].get('query_numba') is not None:
-        query_time_total = min(query_time_total, r['timing']['query_numba']['elapsed'])
+        query_time_total = r['timing']['query_numba']['elapsed']
 
-    if r['timing'].get('query_numpy') is not None:
+    elif r['timing'].get('query_numpy') is not None:
         query_time_total = min(query_time_total, r['timing']['query_numpy']['elapsed'])
 
-    if "tokenize_corpus" in r["timing"]:
+    if "tokenize_corpus_(class)" in r["timing"]:
+        index_time_total += r["timing"]["tokenize_corpus_(class)"]["elapsed"]
+    
+    elif "tokenize_corpus" in r["timing"]:
         index_time_total += r["timing"]["tokenize_corpus"]["elapsed"]
 
-    if "tokenize_queries" in r["timing"]:
+    if "tokenize_queries_(class)" in r["timing"]:
+        query_time_total += r["timing"]["tokenize_queries_(class)"]["elapsed"]
+    elif "tokenize_queries" in r["timing"]:
         query_time_total += r["timing"]["tokenize_queries"]["elapsed"]
 
     n_docs = r["stats"]["num_docs"]
