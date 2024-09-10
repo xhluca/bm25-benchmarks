@@ -30,6 +30,8 @@ model_abbreviations = {
     "rank-bm25": "Rank",
     "elastic-bm25": "ES",
     "pisa": "PISA",
+    "retriv": "RV",
+    "bm25s_jit": "BM25S+J",
 }
 
 
@@ -40,6 +42,7 @@ old_default_params = {
     'bm25s': {'k1': 1.5, 'b': 0.75},
     'elastic-bm25': {'k1': 1.5, 'b': 0.75},
     'pisa': {'k1': 1.2, 'b': 0.75},
+    'retriv': {'k1': 1.2, 'b': 0.75},
 }
 
 # ['arguana', 'climate-fever', 'cqadupstack', 'dbpedia-entity', 'fever',

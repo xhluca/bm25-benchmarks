@@ -15,6 +15,7 @@ import bm25s
 from bm25s.utils.benchmark import get_max_memory_usage, Timer
 from bm25s.utils.beir import (
     BASE_URL,
+    GH_URL,
     clean_results_keys,
     merge_cqa_dupstack,
     postprocess_results_for_eval,
@@ -55,6 +56,7 @@ def main(
         corpus_ids.append(key)
         corpus_lst.append(val["title"] + " " + val["text"])
 
+    corpus_ids = np.array(corpus_ids)
     del corpus
 
     qids, queries_lst = [], []
@@ -74,15 +76,20 @@ def main(
     
     timer = Timer("[BM25S]")
 
-    t = timer.start("Tokenize Queries")
-    queries_tokenized = bm25s.tokenize(
-        queries_lst,
-        stopwords=stopwords,
+    # tokenizer class
+    tokenizer = bm25s.tokenization.Tokenizer(
+        stopwords=stopwords, 
         stemmer=stemmer,
-        leave=False,
-        return_ids=False,
     )
+
+    t = timer.start("Tokenize Corpus (class)")
+    corpus_tokenized_cls = tokenizer.tokenize(corpus_lst, update_vocab=True, return_as="tuple")
+    timer.stop(t, show=True, n_total=num_docs)
+
+    t = timer.start("Tokenize Queries (class)")
+    queries_ids = tokenizer.tokenize(queries_lst, update_vocab=False, return_as="ids")
     timer.stop(t, show=True, n_total=len(queries_lst))
+
 
     t = timer.start("Tokenize Corpus")
     corpus_tokenized = bm25s.tokenize(
@@ -94,8 +101,17 @@ def main(
     )
     timer.stop(t, show=True, n_total=num_docs)
 
+    t = timer.start("Tokenize Queries")
+    queries_tokenized = bm25s.tokenize(
+        queries_lst,
+        stopwords=stopwords,
+        stemmer=stemmer,
+        leave=False,
+        return_ids=False,
+    )
+    timer.stop(t, show=True, n_total=len(queries_lst))
+
     del corpus_lst
-    
 
     num_tokens = sum(len(doc) for doc in corpus_tokenized.ids)
     num_query_tokens = sum(len(q) for q in queries_tokenized)
@@ -107,9 +123,11 @@ def main(
 
     t = timer.start("Index")
     model = bm25s.BM25(method=method, k1=k1, b=b, delta=delta)
-    model.index((corpus_tokenized.ids, corpus_tokenized.vocab), leave_progress=False)
+    # model.index((corpus_tokenized.ids, corpus_tokenized.vocab), leave_progress=False)
+    model.index(corpus_tokenized_cls, leave_progress=False)
     timer.stop(t, show=True, n_total=num_docs)
-    
+    _compute_relevance_from_scores = model._compute_relevance_from_scores
+
     if not skip_scoring:
         t = timer.start("Score")
         for q in tqdm(queries_tokenized, desc="BM25S Scoring", leave=False):
@@ -123,7 +141,7 @@ def main(
         timer.stop(t, show=True, n_total=len(queries_lst))
 
         # Use njit and warmup
-        model._compute_relevance_from_scores = njit(bm25s.scoring._compute_relevance_from_scores_jit_ready)
+        model.activate_numba_scorer()
         model.get_scores(queries_tokenized[0])
 
         t = timer.start("Score (jit)")
@@ -132,10 +150,15 @@ def main(
         timer.stop(t, show=True, n_total=len(queries_lst))
     
     # Use njit and warmup
-    model._compute_relevance_from_scores = njit(bm25s.scoring._compute_relevance_from_scores_jit_ready)
+    model.activate_numba_scorer()
     model.get_scores(queries_tokenized[0])
+    # # reset back to original
+    # model._compute_relevance_from_scores = _compute_relevance_from_scores
 
     ############## BENCHMARKING BEIR HERE ##############
+    # for v1, v2 in zip(queries_ids, queries_tokenized):
+    #     if v1 != v2 and np.any(model.get_scores(v1) != model.get_scores(v2)):
+    #         breakpoint()
 
     t = timer.start("Query")
     queried_results, queried_scores = model.retrieve(
@@ -148,21 +171,26 @@ def main(
     )
     timer.stop(t, show=True, n_total=len(queries_lst))
 
-    if not skip_numpy_retrieval:
-        # warmup
-        model.retrieve(queries_tokenized[0:2], backend_selection="numba")
-        t = timer.start("Query numba")
-        queried_results_nbs, queried_scores_nbs = model.retrieve(
-            queries_tokenized,
-            corpus=corpus_ids,
-            k=top_k,
-            return_as="tuple",
-            n_threads=n_threads,
-            backend_selection="numba",
-            sorted=True,
-        )
-        timer.stop(t, show=True, n_total=len(queries_lst))
+    # warmup
+    model.backend = "numba"
+    # model.retrieve(queries_tokenized[0:2], sorted=True)
+    model.retrieve(queries_ids[:2])
+    t = timer.start("Query numba")
+    queried_results_nbs, queried_scores_nbs = model.retrieve(
+        # query_tokens=queries_tokenized,
+        query_tokens=queries_ids,
+        corpus=corpus_ids,
+        k=top_k,
+        return_as="tuple",
+        n_threads=n_threads
+    )
 
+    timer.stop(t, show=True, n_total=len(queries_lst))
+    assert np.allclose(queried_scores, queried_scores_nbs, atol=1e-6)
+
+    model.backend = "numpy"
+
+    if not skip_numpy_retrieval:
         t = timer.start("Query numpy")
         queried_results, queried_scores_np = model.retrieve(
             queries_tokenized,
@@ -178,10 +206,9 @@ def main(
         # verify that both results are the same
         assert queried_scores.shape == queried_scores_np.shape
         assert np.allclose(queried_scores, queried_scores_np, atol=1e-6)
-        assert np.allclose(queried_scores_nbs, queried_scores_np, atol=1e-6)
 
-        queried_results = queried_results_nbs
-        queried_scores = queried_scores_nbs
+    queried_results = queried_results_nbs
+    queried_scores = queried_scores_nbs
     
     results_dict = postprocess_results_for_eval(queried_results, queried_scores, qids)
     ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(

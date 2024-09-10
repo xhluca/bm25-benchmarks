@@ -80,21 +80,21 @@ The shorthands used are:
 
 | dataset          |   PISA  | BM25S+J |   BM25S |    ES |   PSRN |     PT | R-BM25 |
 |:-----------------|--------:|--------:|--------:|------:|-------:|-------:|-------:|
-| arguana          |  128.01 |  558.45 |  573.91 | 13.67 |  11.95 | 110.51 |   2    |
-| climate-fever    |   25.66 |   30.38 |   13.09 |  4.02 |   8.06 | OOM    |   0.03 |
-| cqadupstack      |  281.65 |  264.86 |  170.91 | 13.38 | DNT    | OOM    |   0.77 |
-| dbpedia-entity   |  114.05 |   46.43 |   13.44 | 10.68 |  12.69 | OOM    |   0.11 |
-| fever            |   60.76 |   41.76 |   20.19 |  7.45 |  10.52 | OOM    |   0.06 |
-| fiqa             |  546.61 |  629.62 |  717.78 | 16.96 |  12.51 |  20.52 |   4.46 |
-| hotpotqa         |   39.70 |   37.23 |   20.88 |  7.11 |  10.41 | OOM    |   0.04 |
-| msmarco          |  125.18 |   28.4  |   12.2  | 11.88 |  11.01 | OOM    |   0.07 |
-| nfcorpus         | 2639.38 | 1252.82 | 1196.16 | 45.84 |  32.94 | 256.67 | 224.66 |
-| nq               |  117.34 |   91.83 |   41.85 | 12.16 |  11.04 | OOM    |   0.1  |
-| quora            |  528.45 |  283.34 |  272.04 | 21.8  |  15.58 |   6.49 |   1.18 |
-| scidocs          |  678.06 |  750.22 |  767.05 | 17.93 |  14.1  |  41.34 |   9.01 |
-| scifact          | 1100.60 |  998.55 | 1317.12 | 20.81 |  15.02 | 184.3  |  47.6  |
-| trec-covid       |  140.92 |  219.03 |   85.64 |  7.34 |   8.53 |   3.73 |   1.48 |
-| webis-touche2020 |  201.19 |  180.52 |   60.59 | 13.53 |  12.36 | OOM    |   1.1  |
+| arguana          |  128.01 |  869.95 |  573.91 | 13.67 |  11.95 | 110.51 |   2    |
+| climate-fever    |   25.66 |   38.49 |   13.09 |  4.02 |   8.06 | OOM    |   0.03 |
+| cqadupstack      |  281.65 |  396.5  |  170.91 | 13.38 | DNT    | OOM    |   0.77 |
+| dbpedia-entity   |  114.05 |   71.8  |   13.44 | 10.68 |  12.69 | OOM    |   0.11 |
+| fever            |   60.76 |   53.84 |   20.19 |  7.45 |  10.52 | OOM    |   0.06 |
+| fiqa             |  546.61 | 1237.39 |  717.78 | 16.96 |  12.51 |  20.52 |   4.46 |
+| hotpotqa         |   39.70 |   47.16 |   20.88 |  7.11 |  10.41 | OOM    |   0.04 |
+| msmarco          |  125.18 |   39.18 |   12.2  | 11.88 |  11.01 | OOM    |   0.07 |
+| nfcorpus         | 2639.38 | 5696.21 | 1196.16 | 45.84 |  32.94 | 256.67 | 224.66 |
+| nq               |  117.34 |  109.47 |   41.85 | 12.16 |  11.04 | OOM    |   0.1  |
+| quora            |  528.45 |  479.71 |  272.04 | 21.8  |  15.58 |   6.49 |   1.18 |
+| scidocs          |  678.06 | 1448.32 |  767.05 | 17.93 |  14.1  |  41.34 |   9.01 |
+| scifact          | 1100.60 | 2787.84 | 1317.12 | 20.81 |  15.02 | 184.3  |  47.6  |
+| trec-covid       |  140.92 |  483.84 |   85.64 |  7.34 |   8.53 |   3.73 |   1.48 |
+| webis-touche2020 |  201.19 |  390.03 |   60.59 | 13.53 |  12.36 | OOM    |   1.1  |
 
 
 Notes:
@@ -230,7 +230,7 @@ We use abbreviations for datasets of BEIR benchmarks.
 |  1.5 | 0.75 | PSRN      |   40.0 | 48.4 | 29.8 | 14.2 | 30.0 | 25.3 | 50.0 | 57.6 | 22.1 | 32.6 | 28.6 | 80.6 | 15.6 | 68.8 | 63.4 | 33.5 |
 |  1.5 | 0.75 | PT        |   45.0 | 44.9 | --   | --   | --   | 22.5 | --   | --   | --   | 31.9 | --   | 75.1 | 14.7 | 67.8 | 58.0 | --   |
 |  1.5 | 0.75 | Rank      |   39.6 | 49.5 | 29.6 | 13.6 | 29.9 | 25.3 | 49.3 | 58.1 | 21.1 | 32.1 | 28.5 | 80.3 | 15.8 | 68.5 | 60.1 | 32.9 |
-|  1.2 | 0.75 | PISA      | 38.8   | 41.2 | 27.8 | 13.8               | 30.6 | 24.6 | 49.1 | 58.1 | 22.6 | 34.4 | 28.2 | 72   | 15.7 | 68.8 | 63.7 | 31.1 |
+|  1.2 | 0.75 | PISA      | 38.8   | 41.2 | 27.8 | 13.8 | 30.6 | 24.6 | 49.1 | 58.1 | 22.6 | 34.4 | 28.2 | 72   | 15.7 | 68.8 | 63.7 | 31.1 |
 
 
 #### Recall@1000
@@ -248,7 +248,7 @@ We use abbreviations for datasets of BEIR benchmarks.
 |  1.5 | 0.75 | PSRN      |   76.7 | 99.2 | 74.2 | 58.7 | 66.2 | 76.7 | 94.2 | 86.4 | 85.1 | 37.1 | 89.4 | 99.6 | 57.4 | 97.7 | 41.1 | 87.2 |
 |  1.5 | 0.75 | PT        |   73.0 | 98.3 | --   | --   | --   | 72.5 | --   | --   | --   | 51.0 | --   | 98.9 | 56.0 | 97.8 | 36.3 | --   |
 |  1.5 | 0.75 | Rank      |   77.1 | 99.4 | 73.4 | 57.5 | 66.4 | 77.4 | 93.6 | 87.7 | 82.6 | 47.6 | 89.5 | 99.5 | 57.4 | 96.7 | 40.5 | 87.5 |
-|  1.2 | 0.75 | PISA      | 77.1   | 98.8 | 72.2 | 59.8              | 67.6 | 76.4 | 93.7 | 86.8 | 86.9 | 38.7 | 89.1 | 98.9 | 56.9 | 97   | 46   | 87.7 |
+|  1.2 | 0.75 | PISA      | 77.1   | 98.8 | 72.2 | 59.8 | 67.6 | 76.4 | 93.7 | 86.8 | 86.9 | 38.7 | 89.1 | 98.9 | 56.9 | 97   | 46   | 87.7 |
 
 
 #### Links
@@ -265,3 +265,4 @@ We use abbreviations for datasets of BEIR benchmarks.
 * Rank: [DB](https://www.kaggle.com/code/xhlulu/benchmark-rank-bm25-dbpedia-entity), [HP](https://www.kaggle.com/code/xhlulu/benchmark-rank-bm25-hotpotqa), [CF](https://www.kaggle.com/code/xhlulu/benchmark-rank-bm25-climate-fever), [FV](https://www.kaggle.com/code/xhlulu/benchmark-rank-bm25-fever), [MS](https://www.kaggle.com/code/xhlulu/benchmark-rank-bm25-msmarco), [NQ](https://www.kaggle.com/code/xhlulu/benchmark-rank-bm25-nq), [CD](https://www.kaggle.com/code/xhlulu/benchmark-rank-bm25-cqadupstack), [Remaining](https://www.kaggle.com/code/xhlulu/benchmark-rank-bm25-sub-1m)
 * PSRN: [CD](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-cqadupstack), [FV](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-fever), [HP](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-hotpotqa), [MS](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-msmarco), [DB](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-dbpedia-entity), [NQ](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-nq), [Remaining](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-sub-1m)
 * PISA: [NQ](https://www.kaggle.com/smac2048/pisa-nq), [DB](https://www.kaggle.com/code/smac2048/pisa-dbpedia-entity), [CF](https://www.kaggle.com/code/smac2048/pisa-climate-fever), [HP](https://www.kaggle.com/code/smac2048/pisa-hotpotqa), [FV](https://www.kaggle.com/code/smac2048/pisa-fever), [MS](https://www.kaggle.com/code/smac2048/pisa-msmarco), [CD](https://www.kaggle.com/code/smac2048/pisa-cqadupstack), [Remaining](https://www.kaggle.com/code/smac2048/pisa-rest)
+* BM25+J: [Sub-1m](https://www.kaggle.com/code/xhlulu/benchmark-bm25s-numba-sub-1m), [remaining](https://www.kaggle.com/code/xhlulu/benchmark-bm25s-numba-rest)

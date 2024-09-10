@@ -43,20 +43,20 @@ method_to_notebooks = {
     #     'xhlulu/benchmark-pyserini-fever',  
     #     'xhlulu/benchmark-pyserini-climate-fever',  
     # ],
-    # 'rank-bm25': [
-    #     'xhlulu/benchmark-rank-bm25-sub-1m',
-    #     'xhlulu/benchmark-rank-bm25-cqadupstack',
-    #     'xhlulu/benchmark-rank-bm25-nq',
-    #     'xhlulu/benchmark-rank-bm25-msmarco',
-    #     'xhlulu/benchmark-rank-bm25-hotpotqa', 
-    #     'xhlulu/benchmark-rank-bm25-dbpedia-entity', 
-    #     'xhlulu/benchmark-rank-bm25-fever',  
-    #     'xhlulu/benchmark-rank-bm25-climate-fever',  
-    # ],
-    # 'bm25s': [
-    #     'xhlulu/benchmark-bm25s-numba-sub-1m',
-    #     'xhlulu/benchmark-bm25s-numba-rest',
-    # ],
+    'rank-bm25': [
+        'xhlulu/benchmark-rank-bm25-sub-1m',
+        'xhlulu/benchmark-rank-bm25-cqadupstack',
+        'xhlulu/benchmark-rank-bm25-nq',
+        'xhlulu/benchmark-rank-bm25-msmarco',
+        'xhlulu/benchmark-rank-bm25-hotpotqa', 
+        'xhlulu/benchmark-rank-bm25-dbpedia-entity', 
+        'xhlulu/benchmark-rank-bm25-fever',  
+        'xhlulu/benchmark-rank-bm25-climate-fever',  
+    ],
+    'bm25s': [
+        'xhlulu/benchmark-bm25s-numba-sub-1m',
+        'xhlulu/benchmark-bm25s-numba-rest',
+    ],
     # # 'bm25s_old': [
     # #     'xhlulu/benchmark-bm25s-sub-1m',
     # #     'xhlulu/benchmark-bm25s-nq',
@@ -66,24 +66,35 @@ method_to_notebooks = {
     # #     'xhlulu/benchmark-bm25s-fever',  
     # #     'xhlulu/benchmark-bm25s-climate-fever',  
     # # ],
-    # 'elasticsearch': [
-    #     'xhlulu/benchmark-elasticsearch-sub-1m',
-    #     'xhlulu/benchmark-elasticsearch-nq',
-    #     'xhlulu/benchmark-elasticsearch-msmarco',
-    #     'xhlulu/benchmark-elasticsearch-hotpotqa', 
-    #     'xhlulu/benchmark-elasticsearch-dbpedia-entity', 
-    #     'xhlulu/benchmark-elasticsearch-fever',
+    'elasticsearch': [
+        'xhlulu/benchmark-elasticsearch-sub-1m',
+        'xhlulu/benchmark-elasticsearch-nq',
+        'xhlulu/benchmark-elasticsearch-msmarco',
+        'xhlulu/benchmark-elasticsearch-hotpotqa', 
+        'xhlulu/benchmark-elasticsearch-dbpedia-entity', 
+        'xhlulu/benchmark-elasticsearch-fever',
+    ],
+    # "pisa": [
+    #     "smac2048/pisa-nq",
+    #     "smac2048/pisa-rest",
+    #     "smac2048/pisa-dbpedia-entity",
+    #     "smac2048/pisa-climate-fever",
+    #     "smac2048/pisa-hotpotqa",
+    #     "smac2048/pisa-fever",
+    #     "smac2048/pisa-msmarco",
+    #     "smac2048/pisa-cqadupstack",
     # ],
-    "pisa": [
-        "smac2048/pisa-nq",
-        "smac2048/pisa-rest",
-        "smac2048/pisa-dbpedia-entity",
-        "smac2048/pisa-climate-fever",
-        "smac2048/pisa-hotpotqa",
-        "smac2048/pisa-fever",
-        "smac2048/pisa-msmarco",
-        "smac2048/pisa-cqadupstack",
-    ]
+    'bm25s_jit': [
+        "xhlulu/benchmark-bm25s-numba-rest",
+        "xhlulu/benchmark-bm25s-numba-sub-1m",
+    ],
+    "retriv": [
+        "xhlulu/benchmark-retriv-on-beir-rest",
+        "xhlulu/benchmark-retriv-on-beir-climate-fever-fever",
+        "xhlulu/benchmark-retriv-on-beir-touche-cpqadupstack",
+        "xhlulu/benchmark-retriv-on-beir-msmarco-hotpotqa",
+        "xhlulu/benchmark-retriv-on-beir-nq-dpedia",
+    ],
 }
 
 

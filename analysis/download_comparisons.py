@@ -12,6 +12,9 @@ from utils import kernels_output
 ERROR_OOM = 'Your notebook tried to allocate more memory than is available.'
 ERROR_TIMEOUT = 'Your notebook was stopped because it exceeded the max allowed execution duration.'
 
+username = os.environ["KAGGLE_USERNAME"]
+api = KaggleApi()
+api.authenticate()
 
 output_base_dir = Path("./comparison_results")
 
@@ -51,6 +54,17 @@ methods_to_nb_name = {
     #     "xhlulu/comparing-bm25s-atire",
     #     "xhlulu/comparing-bm25s-lucene",
     # ],
+    'bm25s_jit': [
+        "xhlulu/benchmark-bm25s-numba-rest",
+        "xhlulu/benchmark-bm25s-numba-sub-1m",
+    ],
+    "retriv": [
+        "xhlulu/benchmark-retriv-on-beir-rest",
+        "xhlulu/benchmark-retriv-on-beir-climate-fever-fever",
+        "xhlulu/benchmark-retriv-on-beir-touche-cpqadupstack",
+        "xhlulu/benchmark-retriv-on-beir-msmarco-hotpotqa",
+        "xhlulu/benchmark-retriv-on-beir-nq-dpedia",
+    ]
     # 'elasticsearch': [
     #     "xhlulu/run-elasticsearch-k1-1-5-b-0-75"
     # ],
@@ -64,16 +78,16 @@ methods_to_nb_name = {
     #     'xhlulu/benchmark-pyserini-fever',  
     #     'xhlulu/benchmark-pyserini-climate-fever',  
     # ],
-    "pisa": [
-        "smac2048/pisa-nq",
-        "smac2048/pisa-rest",
-        "smac2048/pisa-dbpedia-entity",
-        "smac2048/pisa-climate-fever",
-        "smac2048/pisa-hotpotqa",
-        "smac2048/pisa-fever",
-        "smac2048/pisa-msmarco",
-        "smac2048/pisa-cqadupstack",
-    ]
+    # "pisa": [
+    #     "smac2048/pisa-nq",
+    #     "smac2048/pisa-rest",
+    #     "smac2048/pisa-dbpedia-entity",
+    #     "smac2048/pisa-climate-fever",
+    #     "smac2048/pisa-hotpotqa",
+    #     "smac2048/pisa-fever",
+    #     "smac2048/pisa-msmarco",
+    #     "smac2048/pisa-cqadupstack",
+    # ]
 }
 
 
