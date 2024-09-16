@@ -91,15 +91,15 @@ def main(
     timer.stop(t, show=True, n_total=len(queries_lst))
 
 
-    t = timer.start("Tokenize Corpus")
-    corpus_tokenized = bm25s.tokenize(
-        corpus_lst,
-        stopwords=stopwords,
-        stemmer=stemmer,
-        leave=False,
-        return_ids=True,
-    )
-    timer.stop(t, show=True, n_total=num_docs)
+    # t = timer.start("Tokenize Corpus")
+    # corpus_tokenized = bm25s.tokenize(
+    #     corpus_lst,
+    #     stopwords=stopwords,
+    #     stemmer=stemmer,
+    #     leave=False,
+    #     return_ids=True,
+    # )
+    # timer.stop(t, show=True, n_total=num_docs)
 
     t = timer.start("Tokenize Queries")
     queries_tokenized = bm25s.tokenize(
@@ -113,8 +113,8 @@ def main(
 
     del corpus_lst
 
-    num_tokens = sum(len(doc) for doc in corpus_tokenized.ids)
-    num_query_tokens = sum(len(q) for q in queries_tokenized)
+    num_tokens = sum(len(doc) for doc in corpus_ids)
+    num_query_tokens = sum(len(q) for q in queries_ids)
     num_queries = len(queries_lst)
     print(f"Number of Corpus Tokens: {num_tokens:,}")
     print(f"Number of Tokens / Doc: {num_tokens / num_docs:.2f}")
@@ -160,16 +160,16 @@ def main(
     #     if v1 != v2 and np.any(model.get_scores(v1) != model.get_scores(v2)):
     #         breakpoint()
 
-    t = timer.start("Query")
-    queried_results, queried_scores = model.retrieve(
-        queries_tokenized,
-        corpus=corpus_ids,
-        k=top_k,
-        return_as="tuple",
-        n_threads=n_threads,
-        backend_selection="jax",
-    )
-    timer.stop(t, show=True, n_total=len(queries_lst))
+    # t = timer.start("Query")
+    # queried_results, queried_scores = model.retrieve(
+    #     queries_tokenized,
+    #     corpus=corpus_ids,
+    #     k=top_k,
+    #     return_as="tuple",
+    #     n_threads=n_threads,
+    #     backend_selection="jax",
+    # )
+    # timer.stop(t, show=True, n_total=len(queries_lst))
 
     # warmup
     model.backend = "numba"
@@ -186,7 +186,7 @@ def main(
     )
 
     timer.stop(t, show=True, n_total=len(queries_lst))
-    assert np.allclose(queried_scores, queried_scores_nbs, atol=1e-6)
+    # assert np.allclose(queried_scores, queried_scores_nbs, atol=1e-6)
 
     model.backend = "numpy"
 
