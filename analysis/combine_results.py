@@ -82,23 +82,23 @@ results_processed = []
 
 # Process them
 for r in results:
-    if r['n_threads'] > 1 or r['n_threads'] == -1:
+    if r["n_threads"] > 1 or r["n_threads"] == -1:
         continue
 
     index_time_total = r["timing"]["index"]["elapsed"]
-    
+
     # default:
     query_time_total = r["timing"]["query"]["elapsed"]
 
-    if r['timing'].get('query_numba') is not None:
-        query_time_total = r['timing']['query_numba']['elapsed']
+    if r["timing"].get("query_numba") is not None:
+        query_time_total = r["timing"]["query_numba"]["elapsed"]
 
-    elif r['timing'].get('query_numpy') is not None:
-        query_time_total = min(query_time_total, r['timing']['query_numpy']['elapsed'])
+    elif r["timing"].get("query_numpy") is not None:
+        query_time_total = min(query_time_total, r["timing"]["query_numpy"]["elapsed"])
 
     if "tokenize_corpus_(class)" in r["timing"]:
         index_time_total += r["timing"]["tokenize_corpus_(class)"]["elapsed"]
-    
+
     elif "tokenize_corpus" in r["timing"]:
         index_time_total += r["timing"]["tokenize_corpus"]["elapsed"]
 
@@ -128,7 +128,7 @@ for r in results:
             "r@1000": r["recall"]["1000"],
             "qps": n_queries / query_time_total,
             "dps": n_docs / index_time_total,
-            'max_mem_gb': r.get('max_mem_gb', -1)
+            "max_mem_gb": r.get("max_mem_gb", -1),
         }
     )
 
@@ -136,14 +136,14 @@ for r in results:
 results_stats = {}
 
 for r in results:
-    if r['model'] != 'bm25s':
+    if r["model"] != "bm25s":
         continue
-    
-    dataset = r['dataset']
+
+    dataset = r["dataset"]
     results_stats[dataset] = {
-        'num_docs': r['stats']['num_docs'],
-        'num_queries': r['stats']['num_queries'],
-        'num_tokens': r['stats']['num_tokens'],
+        "num_docs": r["stats"]["num_docs"],
+        "num_queries": r["stats"]["num_queries"],
+        "num_tokens": r["stats"]["num_tokens"],
     }
 
 # Now, let's combine all the results into a single DataFrame
@@ -190,42 +190,67 @@ save_dir = Path("analysis/out")
 for subdir in ["csv", "markdown", "latex"]:
     (save_dir / subdir).mkdir(parents=True, exist_ok=True)
 
+
+renamed_cols = {
+    "arguana": "ArguAna",
+    "climate-fever": "Climate-Fever",
+    "cqadupstack ": "CQADupStack",
+    "dbpedia-entity": "DBpedia",
+    "fever": "FEVER",
+    "fiqa": "FiQA",
+    "hotpotqa": "HotpotQA",
+    "msmarco": "MSMARCO",
+    "nfcorpus": "NFCorpus",
+    "nq": "NaturalQuestions",
+    "quora": "Quora",
+    "scidocs": "SciDocs",
+    "scifact": "SciFact",
+    "trec-covid": "TREC-COVID",
+    "webis-touche2020": "Touche-2020",
+}
+
 df.to_csv(save_dir / "csv" / "results.csv", index=False)
 df.to_markdown(save_dir / "markdown" / "results.md", index=False)
-df.to_latex(save_dir / 'latex' / "results.tex", index=False, float_format="%.2f")
+df.to_latex(save_dir / "latex" / "results.tex", index=False, float_format="%.2f")
 
+
+qps_df.index = qps_df.index.map(renamed_cols)
 qps_df.to_csv(save_dir / "csv" / "qps.csv")
 qps_df.to_markdown(save_dir / "markdown" / "qps.md")
-qps_df.to_latex(save_dir  / 'latex' / "qps.tex", float_format="%.2f")
+qps_df.to_latex(save_dir / "latex" / "qps.tex", float_format="%.2f")
 
+qps_df_norm.index = qps_df_norm.index.map(renamed_cols)
 qps_df_norm.to_csv(save_dir / "csv" / "qps_norm.csv")
 qps_df_norm.to_markdown(save_dir / "markdown" / "qps_norm.md")
-qps_df_norm.to_latex(save_dir  / 'latex' / "qps_norm.tex", float_format="%.2f")
+qps_df_norm.to_latex(save_dir / "latex" / "qps_norm.tex", float_format="%.2f")
 
-
+qps_df_es.index = qps_df_es.index.map(renamed_cols)
 qps_df_es.to_csv(save_dir / "csv" / "qps_norm_es.csv")
 qps_df_es.to_markdown(save_dir / "markdown" / "qps_norm_es.md")
-qps_df_es.to_latex(save_dir  / 'latex' / "qps_norm_es.tex", float_format="%.2f")
+qps_df_es.to_latex(save_dir / "latex" / "qps_norm_es.tex", float_format="%.2f")
 
+qps_df_std.index = qps_df_std.index.map(renamed_cols)
 qps_df_std.to_csv(save_dir / "csv" / "qps_std.csv")
 qps_df_std.to_markdown(save_dir / "markdown" / "qps_std.md")
-qps_df_std.to_latex(save_dir  / 'latex' / "qps_std.tex", float_format="%.4f")
+qps_df_std.to_latex(save_dir / "latex" / "qps_std.tex", float_format="%.4f")
 
+dps_df.index = dps_df.index.map(renamed_cols)
 dps_df.to_csv(save_dir / "csv" / "dps.csv")
 dps_df.to_markdown(save_dir / "markdown" / "dps.md")
-dps_df.to_latex(save_dir / 'latex' / "dps.tex", float_format="%.2f")
+dps_df.to_latex(save_dir / "latex" / "dps.tex", float_format="%.2f")
 
 # stats_df.to_csv(save_dir / "csv" / "stats.csv")
 # stats_df.to_markdown(save_dir / "markdown" / "stats.md")
 # stats_df.to_latex(save_dir  / 'latex' / "stats.tex", float_format="%.4f")
 
+ndcg_df.index = ndcg_df.index.map(renamed_cols)
 ndcg_df.to_csv(save_dir / "csv" / "ndcg.csv")
 ndcg_df.to_markdown(save_dir / "markdown" / "ndcg.md")
-ndcg_df.to_latex(save_dir  / 'latex' / "ndcg.tex", float_format="%.4f")
+ndcg_df.to_latex(save_dir / "latex" / "ndcg.tex", float_format="%.4f")
 
+r_df.index = r_df.index.map(renamed_cols)
 r_df.to_csv(save_dir / "csv" / "r.csv")
 r_df.to_markdown(save_dir / "markdown" / "r.md")
-r_df.to_latex(save_dir / 'latex' /  "r.tex", float_format="%.4f")
-
+r_df.to_latex(save_dir / "latex" / "r.tex", float_format="%.4f")
 
 print("Results saved to analysis/out")
