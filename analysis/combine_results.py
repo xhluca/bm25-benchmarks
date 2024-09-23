@@ -68,8 +68,45 @@ model_abbreviations = {
 
 removed_models = [
     # 'pyserini',
-    # "bm25s"
+    # 'elastic-bm25',
+    # 'pisa',
 ]
+
+renamed_cols = {
+    "arguana": "ArguAna",
+    "climate-fever": "Climate-Fever",
+    "cqadupstack": "CQADupStack",
+    "dbpedia-entity": "DBpedia",
+    "fever": "FEVER",
+    "fiqa": "FiQA",
+    "hotpotqa": "HotpotQA",
+    "msmarco": "MSMARCO",
+    "nfcorpus": "NFCorpus",
+    "nq": "NaturalQuestions",
+    "quora": "Quora",
+    "scidocs": "SciDocs",
+    "scifact": "SciFact",
+    "trec-covid": "TREC-COVID",
+    "webis-touche2020": "Touche-2020",
+}
+
+num_docs = {
+    "quora": 522931,
+    "nq": 2681468,
+    "cqadupstack": 457199,
+    "dbpedia-entity": 4635922,
+    "msmarco": 8841823,
+    "webis-touche2020": 382545,
+    "nfcorpus": 3633,
+    "climate-fever": 5416593,
+    "fever": 5416568,
+    "fiqa": 57638,
+    "scifact": 5183,
+    "scidocs": 25657,
+    "hotpotqa": 5233329,
+    "arguana": 8674,
+    "trec-covid": 171332,
+}
 
 # Load all results
 results = []
@@ -141,9 +178,9 @@ for r in results:
 
     dataset = r["dataset"]
     results_stats[dataset] = {
-        "num_docs": r["stats"]["num_docs"],
-        "num_queries": r["stats"]["num_queries"],
-        "num_tokens": r["stats"]["num_tokens"],
+        "Num. Docs": r["stats"]["num_docs"],
+        "Num. Queries": r["stats"]["num_queries"],
+        "Num. Tokens": r["stats"]["num_tokens"],
     }
 
 # Now, let's combine all the results into a single DataFrame
@@ -177,13 +214,18 @@ r_df = df.pivot(index="dataset", columns="model", values="r@1000").round(4)
 # convert to wide, where columns are models, values are qps
 qps_df = df.pivot(index="dataset", columns="model", values="qps").round(2)
 qps_df_norm = qps_df.div(qps_df["Rank"], axis=0).round(2)
-qps_df_es = qps_df.div(qps_df["ES"], axis=0).round(2)
+# qps_df_es = qps_df.div(qps_df["ES"], axis=0).round(2)
 qps_df_std = df.pivot(index="dataset", columns="model", values="qps_std").round(2)
 
 # make a table for dps
 dps_df = df.pivot(index="dataset", columns="model", values="dps").round(2)
 
-# stats_df = pd.DataFrame(results_stats).T.map(lambda x: f"{x:,}")
+stats_df = pd.DataFrame(results_stats).T
+stats_df.index.name = "Dataset"
+stats_df.index = stats_df.index.map(renamed_cols)
+stats_df.sort_index(inplace=True)
+stats_df['Tokens/Doc'] = (stats_df['Num. Tokens'] / stats_df['Num. Docs']).round(2)
+
 
 # save everything as csv, markdown and latex
 save_dir = Path("analysis/out")
@@ -191,23 +233,7 @@ for subdir in ["csv", "markdown", "latex"]:
     (save_dir / subdir).mkdir(parents=True, exist_ok=True)
 
 
-renamed_cols = {
-    "arguana": "ArguAna",
-    "climate-fever": "Climate-Fever",
-    "cqadupstack ": "CQADupStack",
-    "dbpedia-entity": "DBpedia",
-    "fever": "FEVER",
-    "fiqa": "FiQA",
-    "hotpotqa": "HotpotQA",
-    "msmarco": "MSMARCO",
-    "nfcorpus": "NFCorpus",
-    "nq": "NaturalQuestions",
-    "quora": "Quora",
-    "scidocs": "SciDocs",
-    "scifact": "SciFact",
-    "trec-covid": "TREC-COVID",
-    "webis-touche2020": "Touche-2020",
-}
+renamed_to_num_docs = {renamed_cols[k]: v for k, v in num_docs.items()}
 
 df.to_csv(save_dir / "csv" / "results.csv", index=False)
 df.to_markdown(save_dir / "markdown" / "results.md", index=False)
@@ -224,10 +250,17 @@ qps_df_norm.to_csv(save_dir / "csv" / "qps_norm.csv")
 qps_df_norm.to_markdown(save_dir / "markdown" / "qps_norm.md")
 qps_df_norm.to_latex(save_dir / "latex" / "qps_norm.tex", float_format="%.2f")
 
-qps_df_es.index = qps_df_es.index.map(renamed_cols)
-qps_df_es.to_csv(save_dir / "csv" / "qps_norm_es.csv")
-qps_df_es.to_markdown(save_dir / "markdown" / "qps_norm_es.md")
-qps_df_es.to_latex(save_dir / "latex" / "qps_norm_es.tex", float_format="%.2f")
+# get normalized by 100k documents, i.e. qps / num_docs[dataset] * 100k
+qps_df_norm_100k = qps_df.multiply([renamed_to_num_docs[dataset] for dataset in qps_df.index], axis=0) / 100000
+# save
+qps_df_norm_100k.to_csv(save_dir / "csv" / "qps_norm_100k.csv")
+qps_df_norm_100k.to_markdown(save_dir / "markdown" / "qps_norm_100k.md")
+qps_df_norm_100k.to_latex(save_dir / "latex" / "qps_norm_100k.tex", float_format="%.2f")
+
+# qps_df_es.index = qps_df_es.index.map(renamed_cols)
+# qps_df_es.to_csv(save_dir / "csv" / "qps_norm_es.csv")
+# qps_df_es.to_markdown(save_dir / "markdown" / "qps_norm_es.md")
+# qps_df_es.to_latex(save_dir / "latex" / "qps_norm_es.tex", float_format="%.2f")
 
 qps_df_std.index = qps_df_std.index.map(renamed_cols)
 qps_df_std.to_csv(save_dir / "csv" / "qps_std.csv")
@@ -239,9 +272,10 @@ dps_df.to_csv(save_dir / "csv" / "dps.csv")
 dps_df.to_markdown(save_dir / "markdown" / "dps.md")
 dps_df.to_latex(save_dir / "latex" / "dps.tex", float_format="%.2f")
 
-# stats_df.to_csv(save_dir / "csv" / "stats.csv")
-# stats_df.to_markdown(save_dir / "markdown" / "stats.md")
-# stats_df.to_latex(save_dir  / 'latex' / "stats.tex", float_format="%.4f")
+stats_df = stats_df.map(lambda x: f"{x:,}")
+stats_df.to_csv(save_dir / "csv" / "stats.csv")
+stats_df.to_markdown(save_dir / "markdown" / "stats.md")
+stats_df.to_latex(save_dir  / 'latex' / "stats.tex", float_format="%.4f")
 
 ndcg_df.index = ndcg_df.index.map(renamed_cols)
 ndcg_df.to_csv(save_dir / "csv" / "ndcg.csv")
