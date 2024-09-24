@@ -32,6 +32,7 @@ model_abbreviations = {
     "pisa": "PISA",
     "retriv": "RV",
     "bm25s_jit": "BM25S+J",
+    "bm25s_syn": "BM25S+SYN",
 }
 
 
@@ -43,6 +44,7 @@ old_default_params = {
     'elastic-bm25': {'k1': 1.5, 'b': 0.75},
     'pisa': {'k1': 1.2, 'b': 0.75},
     'retriv': {'k1': 1.2, 'b': 0.75},
+    'bm25s_syn': {'k1': 1.5, 'b': 0.75},
 }
 
 # ['arguana', 'climate-fever', 'cqadupstack', 'dbpedia-entity', 'fever',
@@ -87,13 +89,13 @@ results_processed = []
 # Process them
 for r in results:
     index_time_total = r["timing"]["index"]["elapsed"]
-    query_time_total = r["timing"]["query"]["elapsed"]
     
     if r['timing'].get('query_numba') is not None:
-        query_time_total = min(query_time_total, r['timing']['query_numba']['elapsed'])
-
-    if r['timing'].get('query_numpy') is not None:
-        query_time_total = min(query_time_total, r['timing']['query_numpy']['elapsed'])
+        query_time_total = r['timing']['query_numba']['elapsed']
+    elif r['timing'].get('query_numpy') is not None:
+        query_time_total = r['timing']['query_numpy']['elapsed']
+    else:
+        query_time_total = r["timing"]["query"]["elapsed"]
 
     if "tokenize_corpus" in r["timing"]:
         index_time_total += r["timing"]["tokenize_corpus"]["elapsed"]
