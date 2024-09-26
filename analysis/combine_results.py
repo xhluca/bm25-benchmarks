@@ -124,14 +124,15 @@ for r in results:
 
     index_time_total = r["timing"]["index"]["elapsed"]
 
-    # default:
-    query_time_total = r["timing"]["query"]["elapsed"]
-
     if r["timing"].get("query_numba") is not None:
         query_time_total = r["timing"]["query_numba"]["elapsed"]
 
     elif r["timing"].get("query_numpy") is not None:
-        query_time_total = min(query_time_total, r["timing"]["query_numpy"]["elapsed"])
+        query_time_total = r["timing"]["query_numpy"]["elapsed"]
+    elif r["timing"].get("query") is not None:
+        query_time_total = r["timing"]["query"]["elapsed"]
+    else:
+        raise ValueError("No query timing found")
 
     if "tokenize_corpus_(class)" in r["timing"]:
         index_time_total += r["timing"]["tokenize_corpus_(class)"]["elapsed"]
@@ -141,6 +142,7 @@ for r in results:
 
     if "tokenize_queries_(class)" in r["timing"]:
         query_time_total += r["timing"]["tokenize_queries_(class)"]["elapsed"]
+    
     elif "tokenize_queries" in r["timing"]:
         query_time_total += r["timing"]["tokenize_queries"]["elapsed"]
 
@@ -215,6 +217,7 @@ r_df = df.pivot(index="dataset", columns="model", values="r@1000").round(4)
 qps_df = df.pivot(index="dataset", columns="model", values="qps").round(2)
 qps_df_norm = qps_df.div(qps_df["Rank"], axis=0).round(2)
 # qps_df_es = qps_df.div(qps_df["ES"], axis=0).round(2)
+qps_df_norm_rv = qps_df.div(qps_df["RV"], axis=0).round(2)
 qps_df_std = df.pivot(index="dataset", columns="model", values="qps_std").round(2)
 
 # make a table for dps
@@ -249,6 +252,11 @@ qps_df_norm.index = qps_df_norm.index.map(renamed_cols)
 qps_df_norm.to_csv(save_dir / "csv" / "qps_norm.csv")
 qps_df_norm.to_markdown(save_dir / "markdown" / "qps_norm.md")
 qps_df_norm.to_latex(save_dir / "latex" / "qps_norm.tex", float_format="%.2f")
+
+qps_df_norm_rv.index = qps_df_norm_rv.index.map(renamed_cols)
+qps_df_norm_rv.to_csv(save_dir / "csv" / "qps_norm_rv.csv")
+qps_df_norm_rv.to_markdown(save_dir / "markdown" / "qps_norm_rv.md")
+qps_df_norm_rv.to_latex(save_dir / "latex" / "qps_norm_rv.tex", float_format="%.2f")
 
 # get normalized by 100k documents, i.e. qps / num_docs[dataset] * 100k
 qps_df_norm_100k = qps_df.multiply([renamed_to_num_docs[dataset] for dataset in qps_df.index], axis=0) / 100000
