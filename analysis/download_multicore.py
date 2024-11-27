@@ -25,6 +25,10 @@ methods_to_nb_name = {
     "elasticsearch": [
         "xhlulu/run-elasticsearch-multicore",
     ],
+    "bm25s_jit": [
+        "xhlulu/benchmark-bm25s-numba-4t-sub-1m",
+        "xhlulu/benchmark-bm25s-numba-4t-rest",
+    ],
     # "bm25s_jit": [
     #     "xhlulu/benchmark-bm25s-numba-4t-rest",
     #     "xhlulu/benchmark-bm25s-numba-4t-sub-1m",
