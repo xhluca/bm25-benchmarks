@@ -1,2 +1,2 @@
-pyterrier_pisa
+pyterrier_pisa>=0.3.0
 -r requirements.txt
