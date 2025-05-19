@@ -19,7 +19,7 @@ import beir.util
 from beir.datasets.data_loader import GenericDataLoader
 from beir.retrieval.evaluation import EvaluateRetrieval
 from pyterrier_pisa import PisaIndex
-import pyterrier as pt ; pt.init()
+import pyterrier as pt
 
 from bm25s.utils.benchmark import get_max_memory_usage, Timer
 from bm25s.utils.beir import merge_cqa_dupstack
@@ -48,7 +48,7 @@ def build_pisa_index(
 
     index.indexer(mode="overwrite").index(corpus_records)
 
-    return index.bm25(k1=k1, b=b, threads=n_threads)
+    return index.bm25(k1=k1, b=b, threads=n_threads, query_algorithm='block_max_maxscore', precompute_impact=True)
 
 
 def main(dataset, save_dir="datasets", result_dir="results", n_threads=1, top_k=1000, k1=1.2, b=0.75):
