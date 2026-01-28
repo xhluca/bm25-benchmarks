@@ -121,8 +121,14 @@ def main(
     print(f"Number of Tokens / Query: {num_query_tokens / num_queries:.2f}")
     print("-" * 50)
 
+    model = bm25s.BM25(method=method, k1=k1, b=b, delta=delta, auto_compile=False)
+
+    # activate the csc numba backend and warmup
+    model.activate_numba_csc()
+    model.warmup_numba_csc()
+    print("Using Numba CSC Backend for Indexing")
+    
     t = timer.start("Index")
-    model = bm25s.BM25(method=method, k1=k1, b=b, delta=delta)
     # model.index((corpus_tokenized.ids, corpus_tokenized.vocab), leave_progress=False)
     model.index(corpus_tokenized_cls, leave_progress=False)
     timer.stop(t, show=True, n_total=num_docs)
@@ -142,7 +148,7 @@ def main(
 
         # Use njit and warmup
         model.activate_numba_scorer()
-        model.get_scores(queries_tokenized[0])
+        model.warmup_numba_scorer()
 
         t = timer.start("Score (jit)")
         for q in tqdm(queries_tokenized, desc="BM25S Scoring (jit)", leave=False):
@@ -151,7 +157,7 @@ def main(
     
     # Use njit and warmup
     model.activate_numba_scorer()
-    model.get_scores(queries_tokenized[0])
+    model.warmup_numba_scorer()
     # # reset back to original
     # model._compute_relevance_from_scores = _compute_relevance_from_scores
 
