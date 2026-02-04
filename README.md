@@ -19,9 +19,43 @@ python -m benchmark.on_elastic -d "<dataset>"
 
 # for PISA
 python -m benchmark.on_pisa -d "<dataset>"
+
+# For bm25s
+python -m benchmark.on_bm25s -d "<dataset>"
 ```
 
-where `<dataset>` is the name of the dataset to be used. 
+where `<dataset>` is the name of the dataset to be used.
+
+### BM25S options
+
+For `bm25s`, you can specify which scoring methods and retrieval backends to benchmark:
+
+```bash
+# Default: runs legacy and jit scorers, numba backend
+python -m benchmark.on_bm25s -d fiqa
+
+# Specify scorers (uncompiled, legacy, jit)
+python -m benchmark.on_bm25s -d fiqa --scorers legacy jit
+python -m benchmark.on_bm25s -d fiqa --scorers jit
+python -m benchmark.on_bm25s -d fiqa --scorers uncompiled legacy jit
+
+# Specify backends (jax, numba, numpy)
+python -m benchmark.on_bm25s -d fiqa --backends numba
+python -m benchmark.on_bm25s -d fiqa --backends jax numba numpy
+
+# Combine both
+python -m benchmark.on_bm25s -d fiqa --scorers jit --backends numba
+```
+
+Scorer options:
+- `uncompiled`: Default NumPy implementation (optimized with `np.add.at`)
+- `legacy`: Legacy implementation (similar to uncompiled, kept for comparison)
+- `jit`: Numba JIT-compiled version (fastest after warmup)
+
+Backend options:
+- `jax`: JAX-based retrieval
+- `numba`: Numba JIT-compiled retrieval (default)
+- `numpy`: Pure NumPy retrieval 
 
 
 ### Available datasets
