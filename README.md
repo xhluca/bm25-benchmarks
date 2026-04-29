@@ -1,8 +1,78 @@
 # BM25 Benchmarks
 
+## CLI
+
+### Installation
+
+From GitHub with `pip`:
+
+```bash
+pip install "bm25-benchmarks[bm25s] @ git+https://github.com/xhluca/bm25-benchmarks.git"
+```
+
+With `uv` as a globally available tool:
+
+```bash
+uv tool install "bm25-benchmarks[bm25s] @ git+https://github.com/xhluca/bm25-benchmarks.git"
+```
+
+With `uv` into the current virtual environment:
+
+```bash
+uv pip install "bm25-benchmarks[bm25s] @ git+https://github.com/xhluca/bm25-benchmarks.git"
+```
+
+For local development:
+
+```bash
+pip install -e ".[bm25s]"
+# or
+uv pip install -e ".[bm25s]"
+```
+
+Install a different backend by replacing `bm25s` with `rank`, `bm25-pt`,
+`pyserini`, `elastic`, `pisa`, or `all`.
+
+### Usage
+
+The benchmark package exposes one CLI for running evals:
+
+```bash
+bm25-benchmark --help
+bm25-benchmark models
+bm25-benchmark datasets
+```
+
+Run an eval by choosing a backend and dataset:
+
+```bash
+bm25-benchmark eval bm25s -d fiqa
+bm25-benchmark eval rank-bm25 -d fiqa --samples 1000
+bm25-benchmark eval pyserini -d fiqa --threads 4
+bm25-benchmark eval elastic -d fiqa --hostname localhost
+bm25-benchmark eval pisa -d fiqa
+bm25-benchmark eval bm25-pt -d fiqa --batch-size 32
+```
+
+Common eval options include:
+
+```bash
+bm25-benchmark eval bm25s -d fiqa -d scifact --result-dir results --save-dir datasets
+bm25-benchmark eval bm25s -d fiqa,scifact --num-runs 3
+bm25-benchmark eval bm25s -d fiqa --dry-run
+```
+
+Use `bm25-benchmark eval <backend> --help` to see backend-specific options.
+
+The module form is also available:
+
+```bash
+python -m benchmark eval bm25s -d fiqa
+```
+
 ## Benchmarking
 
-To run benchmark on bm25 implementations, simply run:
+The legacy module entry points are still available:
 
 ```bash
 # For bm25_pt
@@ -31,20 +101,20 @@ where `<dataset>` is the name of the dataset to be used.
 For `bm25s`, you can specify which scoring methods and retrieval backends to benchmark:
 
 ```bash
-# Default: runs legacy and jit scorers, numba backend
-python -m benchmark.on_bm25s -d fiqa
+# Default: runs the jit scorer and numba backend
+bm25-benchmark eval bm25s -d fiqa
 
 # Specify scorers (uncompiled, legacy, jit)
-python -m benchmark.on_bm25s -d fiqa --scorers legacy jit
-python -m benchmark.on_bm25s -d fiqa --scorers jit
-python -m benchmark.on_bm25s -d fiqa --scorers uncompiled legacy jit
+bm25-benchmark eval bm25s -d fiqa --scorers legacy jit
+bm25-benchmark eval bm25s -d fiqa --scorers jit
+bm25-benchmark eval bm25s -d fiqa --scorers uncompiled legacy jit
 
 # Specify backends (jax, numba, numpy)
-python -m benchmark.on_bm25s -d fiqa --backends numba
-python -m benchmark.on_bm25s -d fiqa --backends jax numba numpy
+bm25-benchmark eval bm25s -d fiqa --backends numba
+bm25-benchmark eval bm25s -d fiqa --backends jax numba numpy
 
 # Combine both
-python -m benchmark.on_bm25s -d fiqa --scorers jit --backends numba
+bm25-benchmark eval bm25s -d fiqa --scorers jit --backends numba
 ```
 
 Scorer options:
@@ -65,7 +135,7 @@ The available datasets are public BEIR datasets: `trec-covid`, `nfcorpus`, `fiqa
 
 For `rank-bm25`, due to the long runtime, we can sample queries
 ```bash
-python -m benchmark.on_rank_bm25 -d "<dataset>" --samples <num_samples>
+bm25-benchmark eval rank-bm25 -d "<dataset>" --samples <num_samples>
 ```
 
 ### Rank-bm25 variants
