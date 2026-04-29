@@ -7,25 +7,29 @@
 From PyPI with `pip`:
 
 ```bash
-pip install "bm25-benchmarks[bm25s]"
+pip install bm25-benchmarks
+bm25-benchmark install bm25s
 ```
 
 From GitHub with `pip`:
 
 ```bash
-pip install "bm25-benchmarks[bm25s] @ git+https://github.com/xhluca/bm25-benchmarks.git"
+pip install "bm25-benchmarks @ git+https://github.com/xhluca/bm25-benchmarks.git"
+bm25-benchmark install bm25s
 ```
 
 With `uv` as a globally available tool:
 
 ```bash
-uv tool install "bm25-benchmarks[bm25s] @ git+https://github.com/xhluca/bm25-benchmarks.git"
+uv tool install bm25-benchmarks
+bm25-benchmark install bm25s --installer uv
 ```
 
 With `uv` into the current virtual environment:
 
 ```bash
-uv pip install "bm25-benchmarks[bm25s] @ git+https://github.com/xhluca/bm25-benchmarks.git"
+uv pip install "bm25-benchmarks @ git+https://github.com/xhluca/bm25-benchmarks.git"
+bm25-benchmark install bm25s --installer uv
 ```
 
 For local development:
@@ -39,19 +43,14 @@ uv pip install -e ".[bm25s]"
 Install a different backend by replacing `bm25s` with `rank`, `bm25-pt`,
 `pyserini`, `elastic`, `pisa`, or `all`.
 
-For `rank-bm25`, install the pinned Git dependency separately. PyPI rejects
-direct Git dependencies in package metadata, so the pin is kept in
-`requirements-rank-bm25.txt` and must be installed explicitly:
+For `rank-bm25`, use the CLI installer so the pinned Git dependency is installed
+for you. PyPI rejects direct Git dependencies in package metadata, so the pin is
+kept in `requirements-rank-bm25.txt` and the CLI installer:
 
 ```bash
-pip install "bm25-benchmarks[rank]" \
-  "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01"
-
-uv pip install "bm25-benchmarks[rank]" \
-  "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01"
-
-uv tool install "bm25-benchmarks[rank]" \
-  --with "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01"
+bm25-benchmark install rank
+bm25-benchmark install all
+bm25-benchmark install rank --installer uv
 ```
 
 ### Usage

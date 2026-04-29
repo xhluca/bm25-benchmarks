@@ -6,6 +6,9 @@ import argparse
 import cProfile
 import importlib
 import pstats
+import shutil
+import subprocess
+import sys
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -45,6 +48,59 @@ BACKENDS = {
     "pyserini": Backend("pyserini", "benchmark.on_pyserini"),
     "elastic": Backend("elastic", "benchmark.on_elastic", "elastic.prof"),
     "pisa": Backend("pisa", "benchmark.on_pisa"),
+}
+
+PINNED_RANK_BM25_REQUIREMENT = (
+    "rank-bm25 @ "
+    "git+https://github.com/dorianbrown/rank_bm25.git"
+    "@1abce6cb8bd4a4961f0958391b3eabb749483c01"
+)
+
+INSTALL_REQUIREMENTS = {
+    "bm25s": [
+        "beir",
+        "PyStemmer",
+        "ujson",
+        "bm25s[core]>=0.2.0rc8",
+        "numba",
+    ],
+    "rank-bm25": [
+        "beir",
+        "PyStemmer",
+        "ujson",
+        "numpy",
+        PINNED_RANK_BM25_REQUIREMENT,
+    ],
+    "bm25-pt": [
+        "beir",
+        "PyStemmer",
+        "ujson",
+        "bm25-pt",
+        "transformers",
+    ],
+    "pyserini": [
+        "beir",
+        "ujson",
+        "pyserini",
+    ],
+    "elastic": [
+        "beir",
+        "ujson",
+        "elasticsearch",
+    ],
+    "pisa": [
+        "beir",
+        "ujson",
+        "pandas",
+        "pyterrier_pisa>=0.3.0",
+    ],
+}
+
+INSTALL_ALIASES = {
+    "rank": "rank-bm25",
+    "rank_bm25": "rank-bm25",
+    "bm25_pt": "bm25-pt",
+    "elastic-bm25": "elastic",
 }
 
 
@@ -255,6 +311,57 @@ def list_datasets(_: argparse.Namespace) -> int:
     return 0
 
 
+def _normalize_install_targets(targets: list[str]) -> list[str]:
+    normalized: list[str] = []
+    for target in targets:
+        key = INSTALL_ALIASES.get(target, target)
+        if key == "all":
+            for name in INSTALL_REQUIREMENTS:
+                if name not in normalized:
+                    normalized.append(name)
+            continue
+        if key not in INSTALL_REQUIREMENTS:
+            choices = ", ".join([*INSTALL_REQUIREMENTS, "all"])
+            raise ValueError(f"Unknown install target '{target}'. Choose from: {choices}.")
+        if key not in normalized:
+            normalized.append(key)
+    return normalized
+
+
+def _requirements_for_targets(targets: list[str]) -> list[str]:
+    requirements: list[str] = []
+    for target in targets:
+        for requirement in INSTALL_REQUIREMENTS[target]:
+            if requirement not in requirements:
+                requirements.append(requirement)
+    return requirements
+
+
+def install_backends(args: argparse.Namespace) -> int:
+    targets = _normalize_install_targets(args.targets)
+    requirements = _requirements_for_targets(targets)
+
+    if args.installer == "uv":
+        if shutil.which("uv") is None:
+            raise RuntimeError("uv is not available on PATH. Use --installer pip instead.")
+        command = ["uv", "pip", "install", "--python", sys.executable]
+    else:
+        command = [sys.executable, "-m", "pip", "install"]
+
+    if args.upgrade:
+        command.append("--upgrade")
+
+    command.extend(requirements)
+    print("Installing:", ", ".join(targets))
+    print("Command:", " ".join(f'"{part}"' if " " in part else part for part in command))
+
+    if args.dry_run:
+        return 0
+
+    subprocess.run(command, check=True)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bm25-benchmark",
@@ -268,6 +375,35 @@ def build_parser() -> argparse.ArgumentParser:
 
     datasets_parser = subparsers.add_parser("datasets", help="List known BEIR datasets.")
     datasets_parser.set_defaults(func=list_datasets)
+
+    install_parser = subparsers.add_parser(
+        "install",
+        help="Install backend dependencies into the current CLI environment.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    install_parser.add_argument(
+        "targets",
+        nargs="+",
+        choices=[*INSTALL_REQUIREMENTS, *INSTALL_ALIASES, "all"],
+        help="Backend dependency set to install.",
+    )
+    install_parser.add_argument(
+        "--installer",
+        choices=["pip", "uv"],
+        default="pip",
+        help="Installer to use for the current Python interpreter.",
+    )
+    install_parser.add_argument(
+        "--upgrade",
+        action="store_true",
+        help="Pass --upgrade to the installer.",
+    )
+    install_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the install command without running it.",
+    )
+    install_parser.set_defaults(func=install_backends)
 
     common = _common_eval_parser()
     bm25_params = _bm25_params_parser()

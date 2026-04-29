@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bm25-benchmarks"
-version = "0.0.2"
+version = "0.0.3"
 description = "CLI tools for running BM25 benchmark evals."
 readme = "README.md"
 requires-python = ">=3.10"
