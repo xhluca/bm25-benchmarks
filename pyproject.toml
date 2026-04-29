@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bm25-benchmarks"
+version = "0.0.1"
+description = "CLI tools for running BM25 benchmark evals."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+
+[project.scripts]
+bm25-benchmark = "benchmark.cli:main"
+
+[project.optional-dependencies]
+bm25s = [
+    "beir",
+    "PyStemmer",
+    "ujson",
+    "bm25s[core]>=0.2.0rc8",
+    "numba",
+]
+rank = [
+    "beir",
+    "PyStemmer",
+    "ujson",
+    "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01",
+]
+rank-bm25 = [
+    "beir",
+    "PyStemmer",
+    "ujson",
+    "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01",
+]
+bm25-pt = [
+    "beir",
+    "PyStemmer",
+    "ujson",
+    "bm25-pt",
+    "transformers",
+]
+pyserini = [
+    "beir",
+    "ujson",
+    "pyserini",
+]
+elastic = [
+    "beir",
+    "ujson",
+    "elasticsearch",
+]
+pisa = [
+    "beir",
+    "ujson",
+    "pandas",
+    "pyterrier_pisa>=0.3.0",
+]
+all = [
+    "beir",
+    "PyStemmer",
+    "ujson",
+    "bm25s[core]>=0.2.0rc8",
+    "numba",
+    "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01",
+    "bm25-pt",
+    "transformers",
+    "pyserini",
+    "elasticsearch",
+    "pandas",
+    "pyterrier_pisa>=0.3.0",
+]
+
+[tool.setuptools]
+packages = ["benchmark", "benchmark.inference", "utils"]
