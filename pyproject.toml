@@ -4,23 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bm25-benchmarks"
-version = "0.0.3"
+version = "0.0.4"
 description = "CLI tools for running BM25 benchmark evals."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
+dependencies = [
+    "bm25s[core]>=0.3.8",
+]
 
 [project.scripts]
 bm25-benchmark = "benchmark.cli:main"
 
 [project.optional-dependencies]
 bm25s = [
-    "beir",
-    "PyStemmer",
-    "ujson",
-    "bm25s[core]>=0.2.0rc8",
-    "numba",
+    "bm25s[core]>=0.3.8",
 ]
 rank = [
     "beir",
@@ -61,7 +60,7 @@ all = [
     "beir",
     "PyStemmer",
     "ujson",
-    "bm25s[core]>=0.2.0rc8",
+    "bm25s[core]>=0.3.8",
     "numba",
     "numpy",
     "bm25-pt",

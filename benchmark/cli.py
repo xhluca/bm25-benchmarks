@@ -6,6 +6,7 @@ import argparse
 import cProfile
 import importlib
 import pstats
+import shlex
 import shutil
 import subprocess
 import sys
@@ -58,11 +59,7 @@ PINNED_RANK_BM25_REQUIREMENT = (
 
 INSTALL_REQUIREMENTS = {
     "bm25s": [
-        "beir",
-        "PyStemmer",
-        "ujson",
-        "bm25s[core]>=0.2.0rc8",
-        "numba",
+        "bm25s[core]>=0.3.8",
     ],
     "rank-bm25": [
         "beir",
@@ -353,7 +350,7 @@ def install_backends(args: argparse.Namespace) -> int:
 
     command.extend(requirements)
     print("Installing:", ", ".join(targets))
-    print("Command:", " ".join(f'"{part}"' if " " in part else part for part in command))
+    print("Command:", " ".join(shlex.quote(part) for part in command))
 
     if args.dry_run:
         return 0

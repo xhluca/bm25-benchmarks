@@ -1,11 +1,9 @@
 import json
+import math
 import os
 from pathlib import Path
 import time
 
-import beir.util
-from beir.datasets.data_loader import GenericDataLoader
-from beir.retrieval.evaluation import EvaluateRetrieval
 import numpy as np
 from tqdm.auto import tqdm
 import Stemmer
@@ -14,12 +12,76 @@ from numba import njit
 import bm25s
 from bm25s.utils.benchmark import get_max_memory_usage, Timer
 from bm25s.utils.beir import (
-    BASE_URL,
-    GH_URL,
     clean_results_keys,
-    merge_cqa_dupstack,
+    download_dataset,
+    load_corpus,
+    load_queries,
     postprocess_results_for_eval,
 )
+
+
+def load_qrels_dict(dataset, split="test", save_dir="datasets"):
+    qrels_path = Path(save_dir) / dataset / "qrels" / f"{split}.tsv"
+    if not qrels_path.exists():
+        raise FileNotFoundError(f"Qrels file not found at {qrels_path}")
+
+    qrels = {}
+    with open(qrels_path, "r") as f:
+        next(f)
+        for line in f:
+            qid, cid, score = line.strip().split("\t")
+            qrels.setdefault(qid, {})[cid] = int(score)
+    return qrels
+
+
+def evaluate(qrels, results, k_values, ignore_identical_ids=True):
+    ndcg, _map, recall, precision = {}, {}, {}, {}
+    for k in k_values:
+        ndcg[f"NDCG@{k}"] = 0.0
+        _map[f"MAP@{k}"] = 0.0
+        recall[f"Recall@{k}"] = 0.0
+        precision[f"P@{k}"] = 0.0
+
+    num_queries = len(qrels)
+    if num_queries == 0:
+        raise ValueError("Cannot evaluate with no qrels.")
+
+    for qid, rels in qrels.items():
+        relevant = {docid: rel for docid, rel in rels.items() if rel > 0}
+        ranked = sorted(results.get(qid, {}).items(), key=lambda item: item[1], reverse=True)
+        if ignore_identical_ids:
+            ranked = [(docid, score) for docid, score in ranked if docid != qid]
+
+        ideal_rels = sorted(relevant.values(), reverse=True)
+        total_relevant = len(relevant)
+
+        for k in k_values:
+            top_k = ranked[:k]
+            hits = 0
+            ap_sum = 0.0
+            dcg = 0.0
+
+            for rank, (docid, _) in enumerate(top_k, start=1):
+                rel = relevant.get(docid, 0)
+                if rel > 0:
+                    hits += 1
+                    ap_sum += hits / rank
+                    dcg += (2**rel - 1) / math.log2(rank + 1)
+
+            idcg = sum(
+                (2**rel - 1) / math.log2(rank + 1)
+                for rank, rel in enumerate(ideal_rels[:k], start=1)
+            )
+            ndcg[f"NDCG@{k}"] += dcg / idcg if idcg > 0 else 0.0
+            _map[f"MAP@{k}"] += ap_sum / min(total_relevant, k) if total_relevant > 0 else 0.0
+            recall[f"Recall@{k}"] += hits / total_relevant if total_relevant > 0 else 0.0
+            precision[f"P@{k}"] += hits / k
+
+    for metric in (ndcg, _map, recall, precision):
+        for key in metric:
+            metric[key] = round(metric[key] / num_queries, 5)
+
+    return ndcg, _map, recall, precision
 
 
 def main(
@@ -47,27 +109,22 @@ def main(
     corpus_file = data_path / "corpus.jsonl"
 
     if not corpus_file.exists():
-        # Try primary URL first, then fallback to GitHub URL
-        try:
-            data_path = beir.util.download_and_unzip(BASE_URL.format(dataset), save_dir)
-        except Exception:
-            data_path = beir.util.download_and_unzip(GH_URL.format(dataset), save_dir)
-
-    if dataset == "cqadupstack":
-        merge_cqa_dupstack(data_path)
+        data_path = download_dataset(dataset, save_dir=save_dir)
 
     if dataset == "msmarco":
         split = "dev"
     else:
         split = "test"
 
-    corpus, queries, qrels = GenericDataLoader(data_folder=data_path).load(split=split)
+    corpus = load_corpus(dataset, save_dir=save_dir)
+    queries = load_queries(dataset, save_dir=save_dir)
+    qrels = load_qrels_dict(dataset, split=split, save_dir=save_dir)
     num_docs = len(corpus)
 
     corpus_ids, corpus_lst = [], []
     for key, val in corpus.items():
         corpus_ids.append(key)
-        corpus_lst.append(val["title"] + " " + val["text"])
+        corpus_lst.append(f"{val.get('title') or ''} {val['text']}".strip())
 
     corpus_ids = np.array(corpus_ids)
     del corpus
@@ -75,7 +132,10 @@ def main(
     qids, queries_lst = [], []
     for key, val in queries.items():
         qids.append(key)
-        queries_lst.append(val)
+        if isinstance(val, dict):
+            queries_lst.append(val["text"])
+        else:
+            queries_lst.append(val)
 
     print("=" * 50)
     print("Dataset: ", dataset)
@@ -249,9 +309,7 @@ def main(
         queried_scores = queried_scores_np
     
     results_dict = postprocess_results_for_eval(queried_results, queried_scores, qids)
-    ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(
-        qrels, results_dict, [1, 10, 100, 1000]
-    )
+    ndcg, _map, recall, precision = evaluate(qrels, results_dict, [1, 10, 100, 1000])
 
     max_mem_gb = get_max_memory_usage("GB")
 

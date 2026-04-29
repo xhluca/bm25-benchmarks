@@ -8,40 +8,40 @@ From PyPI with `pip`:
 
 ```bash
 pip install bm25-benchmarks
-bm25-benchmark install bm25s
 ```
 
 From GitHub with `pip`:
 
 ```bash
 pip install "bm25-benchmarks @ git+https://github.com/xhluca/bm25-benchmarks.git"
-bm25-benchmark install bm25s
 ```
 
 With `uv` as a globally available tool:
 
 ```bash
 uv tool install bm25-benchmarks
-bm25-benchmark install bm25s --installer uv
 ```
 
 With `uv` into the current virtual environment:
 
 ```bash
 uv pip install "bm25-benchmarks @ git+https://github.com/xhluca/bm25-benchmarks.git"
-bm25-benchmark install bm25s --installer uv
 ```
 
 For local development:
 
 ```bash
-pip install -e ".[bm25s]"
+pip install -e "."
 # or
-uv pip install -e ".[bm25s]"
+uv pip install -e "."
 ```
 
-Install a different backend by replacing `bm25s` with `rank`, `bm25-pt`,
-`pyserini`, `elastic`, `pisa`, or `all`.
+The default install includes `bm25s`. The `bm25s` backend uses the dataset
+helpers shipped by `bm25s`, so the default CLI path does not install `beir`.
+Install another backend with
+`bm25-benchmark install rank`, `bm25-benchmark install bm25-pt`,
+`bm25-benchmark install pyserini`, `bm25-benchmark install elastic`,
+`bm25-benchmark install pisa`, or `bm25-benchmark install all`.
 
 For `rank-bm25`, use the CLI installer so the pinned Git dependency is installed
 for you. PyPI rejects direct Git dependencies in package metadata, so the pin is
@@ -90,31 +90,7 @@ The module form is also available:
 python -m benchmark eval bm25s -d fiqa
 ```
 
-## Benchmarking
-
-The legacy module entry points are still available:
-
-```bash
-# For bm25_pt
-python -m benchmark.on_bm25_pt -d "<dataset>"
-
-# For rank-bm25
-python -m benchmark.on_rank_bm25 -d "<dataset>"
-
-# for Pyserini
-python -m benchmark.on_pyserini -d "<dataset>"
-
-# For elastic, After starting the server, run:
-python -m benchmark.on_elastic -d "<dataset>"
-
-# for PISA
-python -m benchmark.on_pisa -d "<dataset>"
-
-# For bm25s
-python -m benchmark.on_bm25s -d "<dataset>"
-```
-
-where `<dataset>` is the name of the dataset to be used.
+## Running Benchmarks
 
 ### BM25S options
 
@@ -391,3 +367,30 @@ We use abbreviations for datasets of BEIR benchmarks.
 * PSRN: [CD](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-cqadupstack), [FV](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-fever), [HP](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-hotpotqa), [MS](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-msmarco), [DB](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-dbpedia-entity), [NQ](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-nq), [Remaining](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-sub-1m)
 * PISA: [NQ](https://www.kaggle.com/smac2048/pisa-nq), [DB](https://www.kaggle.com/code/smac2048/pisa-dbpedia-entity), [CF](https://www.kaggle.com/code/smac2048/pisa-climate-fever), [HP](https://www.kaggle.com/code/smac2048/pisa-hotpotqa), [FV](https://www.kaggle.com/code/smac2048/pisa-fever), [MS](https://www.kaggle.com/code/smac2048/pisa-msmarco), [CD](https://www.kaggle.com/code/smac2048/pisa-cqadupstack), [Remaining](https://www.kaggle.com/code/smac2048/pisa-rest)
 * BM25+J: [Sub-1m](https://www.kaggle.com/code/xhlulu/benchmark-bm25s-numba-sub-1m), [remaining](https://www.kaggle.com/code/xhlulu/benchmark-bm25s-numba-rest)
+
+## Legacy Module Entry Points
+
+Prefer the `bm25-benchmark eval ...` CLI for new runs. The older module entry
+points are still available for existing scripts:
+
+```bash
+# For bm25_pt
+python -m benchmark.on_bm25_pt -d "<dataset>"
+
+# For rank-bm25
+python -m benchmark.on_rank_bm25 -d "<dataset>"
+
+# For Pyserini
+python -m benchmark.on_pyserini -d "<dataset>"
+
+# For elastic, after starting the server, run:
+python -m benchmark.on_elastic -d "<dataset>"
+
+# For PISA
+python -m benchmark.on_pisa -d "<dataset>"
+
+# For bm25s
+python -m benchmark.on_bm25s -d "<dataset>"
+```
+
+where `<dataset>` is the name of the dataset to be used.
