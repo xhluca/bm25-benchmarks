@@ -10,7 +10,24 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 import numpy as np
 from tqdm.auto import tqdm
 import Stemmer
-import rank_bm25
+
+PINNED_RANK_BM25_REQUIREMENT = (
+    "rank-bm25 @ "
+    "git+https://github.com/dorianbrown/rank_bm25.git"
+    "@1abce6cb8bd4a4961f0958391b3eabb749483c01"
+)
+
+try:
+    import rank_bm25
+except ModuleNotFoundError as exc:
+    if exc.name != "rank_bm25":
+        raise
+    raise ModuleNotFoundError(
+        "The rank-bm25 benchmark requires the pinned Git dependency. Install it with:\n"
+        f'  python -m pip install "{PINNED_RANK_BM25_REQUIREMENT}"\n'
+        "or, with uv:\n"
+        f'  uv pip install "{PINNED_RANK_BM25_REQUIREMENT}"'
+    ) from exc
 
 import utils
 from utils.benchmark import get_max_memory_usage, Timer

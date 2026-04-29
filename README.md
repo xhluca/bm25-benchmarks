@@ -4,6 +4,12 @@
 
 ### Installation
 
+From PyPI with `pip`:
+
+```bash
+pip install "bm25-benchmarks[bm25s]"
+```
+
 From GitHub with `pip`:
 
 ```bash
@@ -32,6 +38,21 @@ uv pip install -e ".[bm25s]"
 
 Install a different backend by replacing `bm25s` with `rank`, `bm25-pt`,
 `pyserini`, `elastic`, `pisa`, or `all`.
+
+For `rank-bm25`, install the pinned Git dependency separately. PyPI rejects
+direct Git dependencies in package metadata, so the pin is kept in
+`requirements-rank-bm25.txt` and must be installed explicitly:
+
+```bash
+pip install "bm25-benchmarks[rank]" \
+  "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01"
+
+uv pip install "bm25-benchmarks[rank]" \
+  "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01"
+
+uv tool install "bm25-benchmarks[rank]" \
+  --with "rank-bm25 @ git+https://github.com/dorianbrown/rank_bm25.git@1abce6cb8bd4a4961f0958391b3eabb749483c01"
+```
 
 ### Usage
 
