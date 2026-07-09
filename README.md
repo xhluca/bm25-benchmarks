@@ -170,7 +170,9 @@ The shorthands used are:
 - `BM25PT` for `bm25_pt`
 - `PSRN` for `pyserini`
 - `R-BM25` for `rank-bm25`
-- `BM25S` for `bm25`, and `BM25S+J` for Numba JIT version of `bm25s` (v0.2.0+)
+- `BM25S (0.3.9)` for the latest `bm25s` release (numba JIT backend)
+- `BM25S-F` for [`bm25s-fast-preview`](https://github.com/xhluca/bm25s-fast-preview) — a drop-in fork with a compiled index builder and threshold-primed selection (exact retrieval, identical results)
+- `BM25S-FQ` for `bm25s-fast-preview` with opt-in 8-bit `quantize=True` (approximate scores, ranking quality within tie-level noise)
 - `ES` for `elasticsearch`
 - `PISA` for the [Pisa Engine](https://github.com/pisa-engine/pisa) (via the [`pyterrier_pisa`](https://github.com/terrierteam/pyterrier_pisa) Python bindings)
 - `OOM` for out-of-memory error
@@ -178,23 +180,27 @@ The shorthands used are:
 
 ### Queries per second
 
-| dataset          |   PISA  | BM25S+J |   BM25S |    ES |   PSRN |     PT | R-BM25 |
-|:-----------------|--------:|--------:|--------:|------:|-------:|-------:|-------:|
-| arguana          |  270.53 |  869.95 |  573.91 | 13.67 |  11.95 | 110.51 |   2    |
-| climate-fever    |   35.95 |   38.49 |   13.09 |  4.02 |   8.06 | OOM    |   0.03 |
-| cqadupstack      |  362.39 |  396.5  |  170.91 | 13.38 | DNT    | OOM    |   0.77 |
-| dbpedia-entity   |  197.45 |   71.8  |   13.44 | 10.68 |  12.69 | OOM    |   0.11 |
-| fever            |   81.42 |   53.84 |   20.19 |  7.45 |  10.52 | OOM    |   0.06 |
-| fiqa             |  714.35 | 1237.39 |  717.78 | 16.96 |  12.51 |  20.52 |   4.46 |
-| hotpotqa         |   54.98 |   47.16 |   20.88 |  7.11 |  10.41 | OOM    |   0.04 |
-| msmarco          |  178.65 |   39.18 |   12.2  | 11.88 |  11.01 | OOM    |   0.07 |
-| nfcorpus         | 5111.72 | 5696.21 | 1196.16 | 45.84 |  32.94 | 256.67 | 224.66 |
-| nq               |  168.12 |  109.47 |   41.85 | 12.16 |  11.04 | OOM    |   0.1  |
-| quora            |  735.20 |  479.71 |  272.04 | 21.8  |  15.58 |   6.49 |   1.18 |
-| scidocs          |  818.97 | 1448.32 |  767.05 | 17.93 |  14.1  |  41.34 |   9.01 |
-| scifact          | 1463.73 | 2787.84 | 1317.12 | 20.81 |  15.02 | 184.3  |  47.6  |
-| trec-covid       |  282.94 |  483.84 |   85.64 |  7.34 |   8.53 |   3.73 |   1.48 |
-| webis-touche2020 |  431.12 |  390.03 |   60.59 | 13.53 |  12.36 | OOM    |   1.1  |
+> The `BM25S (0.3.9)`, `BM25S-F`, and `BM25S-FQ` columns were re-run together on current Kaggle CPU (single-thread, numba backend, min-of-3 reps) so they are apples-to-apples with each other; the other engines' numbers are from the original benchmark and may reflect different hardware. Retrieval quality (NDCG@10 / Recall@1000) for `BM25S-F` is identical to `BM25S (0.3.9)` (differences in the 3rd–4th decimal, tie ordering); `BM25S-FQ` is within tie-level noise. `BM25S-FQ` query numbers are pending (kernels running).
+
+[^cqa]: `BM25S (0.3.9)` fails on cqadupstack: `merge_cqa_dupstack` writes the merged queries with orjson, which the loader can't parse (`JSONDecodeError`). Fixed in `bm25s-fast-preview` ([commit](https://github.com/xhluca/bm25s-fast-preview/commit/HEAD)), so `BM25S-F`/`BM25S-FQ` run it.
+
+| dataset | PISA | BM25S (0.3.9) | BM25S-F | BM25S-FQ | ES | PSRN | PT | R-BM25 |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| arguana | 270.53 | 1231.13 | 1989.34 | TBD | 13.67 | 11.95 | 110.51 | 2 |
+| climate-fever | 35.95 | 33.11 | 48.85 | TBD | 4.02 | 8.06 | OOM | 0.03 |
+| cqadupstack | 362.39 | bug[^cqa] | 431.81 | TBD | 13.38 | DNT | OOM | 0.77 |
+| dbpedia-entity | 197.45 | 125.88 | 104.30 | TBD | 10.68 | 12.69 | OOM | 0.11 |
+| fever | 81.42 | 45.32 | 122.12 | TBD | 7.45 | 10.52 | OOM | 0.06 |
+| fiqa | 714.35 | 1427.50 | 1931.91 | TBD | 16.96 | 12.51 | 20.52 | 4.46 |
+| hotpotqa | 54.98 | 41.71 | 59.80 | TBD | 7.11 | 10.41 | OOM | 0.04 |
+| msmarco | 178.65 | 32.43 | 55.08 | TBD | 11.88 | 11.01 | OOM | 0.07 |
+| nfcorpus | 5111.72 | 79179.05 | 120318.92 | TBD | 45.84 | 32.94 | 256.67 | 224.66 |
+| nq | 168.12 | 120.75 | 178.97 | TBD | 12.16 | 11.04 | OOM | 0.1 |
+| quora | 735.20 | 451.29 | 876.52 | TBD | 21.8 | 15.58 | 6.49 | 1.18 |
+| scidocs | 818.97 | 1564.01 | 2272.69 | TBD | 17.93 | 14.1 | 41.34 | 9.01 |
+| scifact | 1463.73 | 3222.19 | 4658.14 | TBD | 20.81 | 15.02 | 184.3 | 47.6 |
+| trec-covid | 282.94 | 694.65 | 1000.60 | TBD | 7.34 | 8.53 | 3.73 | 1.48 |
+| webis-touche2020 | 431.12 | 492.55 | 840.23 | TBD | 13.53 | 12.36 | OOM | 1.1 |
 
 
 Notes:
@@ -273,23 +279,23 @@ Notes:
 
 The following results follow the same setup as the queries/s benchmarks described above (single-core).
 
-| dataset          |     PISA |    BM25S |      ES |     PSRN |      PT |     Rank |
-|:-----------------|---------:|---------:|--------:|---------:|--------:|---------:|
-| arguana          |   3432.50|  4314.79 | 3591.63 |  1225.18 |  638.1  |  5021.3  |
-| climate-fever    |   5462.73|  4364.43 | 3825.89 |  6880.42 |  nan    |  7085.51 |
-| cqadupstack      |   3963.76|  4800.89 | 3725.43 |   nan    |  nan    |  5370.32 |
-| dbpedia-entity   |   9019.62|  7576.28 | 6333.82 |  8501.7  |  nan    |  9110.36 |
-| fever            |   4903.06|  4921.88 | 3879.63 |  7007.5  |  nan    |  5482.64 |
-| fiqa             |   4426.92|  5959.25 | 4035.11 |  3735.38 |  421.51 |  6455.53 |
-| hotpotqa         |   9883.85|  7420.39 | 5455.6  | 10342.5  |  nan    |  9407.9  |
-| msmarco          |  10205.53|  7480.71 | 5391.29 |  9686.07 |  nan    | 12455.9  |
-| nfcorpus         |   2381.11|  3169.4  | 1688.15 |   692.05 |  442.2  |  3579.47 |
-| nq               |   7122.05|  6083.86 | 5742.13 |  6652.33 |  nan    |  6048.85 |
-| quora            |  38512.02| 28002.4  | 8189.75 | 22818.5  | 6251.26 | 47609.2  |
-| scidocs          |   3085.13|  4107.46 | 3008.45 |  2137.64 |  312.72 |  4232.15 |
-| scifact          |   2449.91|  3253.63 | 2649.57 |   880.53 |  442.61 |  3792.84 |
-| trec-covid       |   4642.59|  4600.14 | 2966.98 |  3768.1  |  406.37 |  4672.62 |
-| webis-touche2020 |   2228.10|  2971.96 | 2484.87 |  2718.41 |  nan    |  3115.96 |
+| dataset | PISA | BM25S (0.3.9) | BM25S-F | BM25S-FQ | ES | PSRN | PT | Rank |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| arguana | 3432.50 | 9406.9 | 150572.1 | 150572.1 | 3591.63 | 1225.18 | 638.1 | 5021.3 |
+| climate-fever | 5462.73 | 14916.5 | 88541.1 | 88541.1 | 3825.89 | 6880.42 | nan | 7085.51 |
+| cqadupstack | 3963.76 | bug[^cqa] | 85627.7 | 85627.7 | 3725.43 | nan | nan | 5370.32 |
+| dbpedia-entity | 9019.62 | 30176.7 | 149225.7 | 149225.7 | 6333.82 | 8501.7 | nan | 9110.36 |
+| fever | 4903.06 | 16090.0 | 110445.7 | 110445.7 | 3879.63 | 7007.5 | nan | 5482.64 |
+| fiqa | 4426.92 | 14917.2 | 181518.0 | 181518.0 | 4035.11 | 3735.38 | 421.51 | 6455.53 |
+| hotpotqa | 9883.85 | 22174.6 | 152794.5 | 152794.5 | 5455.6 | 10342.5 | nan | 9407.9 |
+| msmarco | 10205.53 | 21314.9 | 154011.0 | 154011.0 | 5391.29 | 9686.07 | nan | 12455.9 |
+| nfcorpus | 2381.11 | 10503.1 | 93188.8 | 93188.8 | 1688.15 | 692.05 | 442.2 | 3579.47 |
+| nq | 7122.05 | 17582.1 | 133639.4 | 133639.4 | 5742.13 | 6652.33 | nan | 6048.85 |
+| quora | 38512.02 | 36844.0 | 1607935.3 | 1607935.3 | 8189.75 | 22818.5 | 6251.26 | 47609.2 |
+| scidocs | 3085.13 | 10340.9 | 131299.4 | 131299.4 | 3008.45 | 2137.64 | 312.72 | 4232.15 |
+| scifact | 2449.91 | 7948.2 | 108102.0 | 108102.0 | 2649.57 | 880.53 | 442.61 | 3792.84 |
+| trec-covid | 4642.59 | 12463.2 | 136267.0 | 136267.0 | 2966.98 | 3768.1 | 406.37 | 4672.62 |
+| webis-touche2020 | 2228.10 | 9879.3 | 84367.6 | 84367.6 | 2484.87 | 2718.41 | nan | 3115.96 |
 
 #### NDCG@10
 
@@ -367,6 +373,9 @@ We use abbreviations for datasets of BEIR benchmarks.
 * PSRN: [CD](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-cqadupstack), [FV](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-fever), [HP](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-hotpotqa), [MS](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-msmarco), [DB](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-dbpedia-entity), [NQ](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-nq), [Remaining](https://www.kaggle.com/code/xhlulu/benchmark-pyserini-sub-1m)
 * PISA: [NQ](https://www.kaggle.com/smac2048/pisa-nq), [DB](https://www.kaggle.com/code/smac2048/pisa-dbpedia-entity), [CF](https://www.kaggle.com/code/smac2048/pisa-climate-fever), [HP](https://www.kaggle.com/code/smac2048/pisa-hotpotqa), [FV](https://www.kaggle.com/code/smac2048/pisa-fever), [MS](https://www.kaggle.com/code/smac2048/pisa-msmarco), [CD](https://www.kaggle.com/code/smac2048/pisa-cqadupstack), [Remaining](https://www.kaggle.com/code/smac2048/pisa-rest)
 * BM25+J: [Sub-1m](https://www.kaggle.com/code/xhlulu/benchmark-bm25s-numba-sub-1m), [remaining](https://www.kaggle.com/code/xhlulu/benchmark-bm25s-numba-rest)
+* BM25S (0.3.9): [NQ](https://www.kaggle.com/code/xhlulu/test-bm25s-baseline), [DB](https://www.kaggle.com/code/xhlulu/beir-bm25s-baseline-dbpedia-r3), [MS](https://www.kaggle.com/code/xhlulu/bb-baseline-msmarco), [HP](https://www.kaggle.com/code/xhlulu/beir-bm25s-baseline-hotpotqa), [FV](https://www.kaggle.com/code/xhlulu/bb-baseline-fever), [CF](https://www.kaggle.com/code/xhlulu/bb-baseline-climate-fever), [small](https://www.kaggle.com/code/xhlulu/bb-baseline-sub-1m), [WT](https://www.kaggle.com/code/xhlulu/bb-baseline-touche)
+* BM25S-F ([bm25s-fast-preview](https://github.com/xhluca/bm25s-fast-preview), exact): [NQ](https://www.kaggle.com/code/xhlulu/test-bm25s-fast-preview), [DB](https://www.kaggle.com/code/xhlulu/beir-bm25s-preview-dbpedia), [MS](https://www.kaggle.com/code/xhlulu/bb-preview-msmarco), [HP](https://www.kaggle.com/code/xhlulu/bb-preview-hotpotqa), [FV](https://www.kaggle.com/code/xhlulu/bb-preview-fever), [CF](https://www.kaggle.com/code/xhlulu/bb-preview-climate-fever), [CD](https://www.kaggle.com/code/xhlulu/bb-preview-cqa), [small](https://www.kaggle.com/code/xhlulu/bb-preview-sub-1m)
+* BM25S-FQ (bm25s-fast-preview `quantize=True`): [NQ](https://www.kaggle.com/code/xhlulu/fq-nq), [DB](https://www.kaggle.com/code/xhlulu/fq-dbpedia), [MS](https://www.kaggle.com/code/xhlulu/fq-msmarco), [HP](https://www.kaggle.com/code/xhlulu/fq-hotpotqa), [FV](https://www.kaggle.com/code/xhlulu/fq-fever), [CF](https://www.kaggle.com/code/xhlulu/fq-climate-fever), [CD](https://www.kaggle.com/code/xhlulu/fq-cqa), [small](https://www.kaggle.com/code/xhlulu/fq-sub-1m)
 
 ## Legacy Module Entry Points
 
