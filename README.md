@@ -1,3 +1,7 @@
+| 1.5 | 0.75 | BM25S-F | 76.9 | 99.4 | 73.3 | 57.8 | 66.5 | 77.2 | 93.8 | 86.1 | 85.2 | 42.5 | 89.5 | 99.6 | 57.5 | 97.0 | 40.6 | 87.4 |
+| 1.5 | 0.75 | BM25S-FQ | 76.9 | 99.4 | 73.3 | 57.8 | 66.5 | 77.2 | 93.8 | 86.1 | 85.1 | 42.6 | 89.6 | 99.5 | 57.5 | 97.0 | 40.6 | 87.4 |
+| 1.5 | 0.75 | BM25S-F | 39.4 | 49.4 | 29.9 | 13.6 | 28.1 | 25.1 | 48.1 | 56.9 | 21.9 | 32.3 | 28.5 | 80.4 | 15.8 | 68.6 | 59.9 | 32.6 |
+| 1.5 | 0.75 | BM25S-FQ | 39.4 | 49.5 | 29.9 | 13.6 | 28.0 | 25.0 | 48.1 | 56.9 | 21.9 | 32.3 | 28.5 | 80.4 | 15.8 | 68.6 | 60.0 | 32.5 |
 # BM25 Benchmarks
 
 ## CLI
@@ -180,27 +184,27 @@ The shorthands used are:
 
 ### Queries per second
 
-> The `BM25S (0.3.9)`, `BM25S-F`, and `BM25S-FQ` columns were re-run together on current Kaggle CPU (single-thread, numba backend, min-of-3 reps) so they are apples-to-apples with each other; the other engines' numbers are from the original benchmark and may reflect different hardware. Retrieval quality (NDCG@10 / Recall@1000) for `BM25S-F` is identical to `BM25S (0.3.9)` (differences in the 3rd–4th decimal, tie ordering); `BM25S-FQ` is within tie-level noise. `BM25S-FQ` query numbers are pending (kernels running).
+> The `BM25S (0.3.9)`, `BM25S-F`, and `BM25S-FQ` columns were re-run together on current Kaggle CPU (single-thread, numba backend, min-of-3 reps) so they are apples-to-apples with each other; the other engines' numbers are from the original benchmark and may reflect different hardware. Retrieval quality (NDCG@10 / Recall@1000) for `BM25S-F` is identical to `BM25S (0.3.9)` (differences in the 3rd–4th decimal, tie ordering); `BM25S-FQ` is within tie-level noise. `BM25S-FQ` (8-bit `quantize=True`) is a **large-corpus** optimization: it builds the quantized impact array once per index, so it is markedly faster on big collections (msmarco 55→156 q/s, nq 179→278, dbpedia 104→216) but slower on tiny ones where that one-time build isn't amortized. Its NDCG@10/Recall@1000 stay within tie-level noise (rows added below).
 
 [^cqa]: `BM25S (0.3.9)` fails on cqadupstack: `merge_cqa_dupstack` writes the merged queries with orjson, which the loader can't parse (`JSONDecodeError`). Fixed in `bm25s-fast-preview` ([commit](https://github.com/xhluca/bm25s-fast-preview/commit/HEAD)), so `BM25S-F`/`BM25S-FQ` run it.
 
 | dataset | PISA | BM25S (0.3.9) | BM25S-F | BM25S-FQ | ES | PSRN | PT | R-BM25 |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| arguana | 270.53 | 1231.13 | 1989.34 | TBD | 13.67 | 11.95 | 110.51 | 2 |
-| climate-fever | 35.95 | 33.11 | 48.85 | TBD | 4.02 | 8.06 | OOM | 0.03 |
-| cqadupstack | 362.39 | bug[^cqa] | 431.81 | TBD | 13.38 | DNT | OOM | 0.77 |
-| dbpedia-entity | 197.45 | 125.88 | 104.30 | TBD | 10.68 | 12.69 | OOM | 0.11 |
-| fever | 81.42 | 45.32 | 122.12 | TBD | 7.45 | 10.52 | OOM | 0.06 |
-| fiqa | 714.35 | 1427.50 | 1931.91 | TBD | 16.96 | 12.51 | 20.52 | 4.46 |
-| hotpotqa | 54.98 | 41.71 | 59.80 | TBD | 7.11 | 10.41 | OOM | 0.04 |
-| msmarco | 178.65 | 32.43 | 55.08 | TBD | 11.88 | 11.01 | OOM | 0.07 |
-| nfcorpus | 5111.72 | 79179.05 | 120318.92 | TBD | 45.84 | 32.94 | 256.67 | 224.66 |
-| nq | 168.12 | 120.75 | 178.97 | TBD | 12.16 | 11.04 | OOM | 0.1 |
-| quora | 735.20 | 451.29 | 876.52 | TBD | 21.8 | 15.58 | 6.49 | 1.18 |
-| scidocs | 818.97 | 1564.01 | 2272.69 | TBD | 17.93 | 14.1 | 41.34 | 9.01 |
-| scifact | 1463.73 | 3222.19 | 4658.14 | TBD | 20.81 | 15.02 | 184.3 | 47.6 |
-| trec-covid | 282.94 | 694.65 | 1000.60 | TBD | 7.34 | 8.53 | 3.73 | 1.48 |
-| webis-touche2020 | 431.12 | 492.55 | 840.23 | TBD | 13.53 | 12.36 | OOM | 1.1 |
+| arguana | 270.53 | 1231.13 | 1989.34 | 1346.28 | 13.67 | 11.95 | 110.51 | 2 |
+| climate-fever | 35.95 | 33.11 | 48.85 | 75.68 | 4.02 | 8.06 | OOM | 0.03 |
+| cqadupstack | 362.39 | bug[^cqa] | 431.81 | 386.77 | 13.38 | DNT | OOM | 0.77 |
+| dbpedia-entity | 197.45 | 125.88 | 104.30 | 215.65 | 10.68 | 12.69 | OOM | 0.11 |
+| fever | 81.42 | 45.32 | 122.12 | 142.79 | 7.45 | 10.52 | OOM | 0.06 |
+| fiqa | 714.35 | 1427.50 | 1931.91 | 1299.55 | 16.96 | 12.51 | 20.52 | 4.46 |
+| hotpotqa | 54.98 | 41.71 | 59.80 | 105.02 | 7.11 | 10.41 | OOM | 0.04 |
+| msmarco | 178.65 | 32.43 | 55.08 | 156.41 | 11.88 | 11.01 | OOM | 0.07 |
+| nfcorpus | 5111.72 | 79179.05 | 120318.92 | 8610.01 | 45.84 | 32.94 | 256.67 | 224.66 |
+| nq | 168.12 | 120.75 | 178.97 | 278.30 | 12.16 | 11.04 | OOM | 0.1 |
+| quora | 735.20 | 451.29 | 876.52 | 639.36 | 21.8 | 15.58 | 6.49 | 1.18 |
+| scidocs | 818.97 | 1564.01 | 2272.69 | 1515.23 | 17.93 | 14.1 | 41.34 | 9.01 |
+| scifact | 1463.73 | 3222.19 | 4658.14 | 3539.55 | 20.81 | 15.02 | 184.3 | 47.6 |
+| trec-covid | 282.94 | 694.65 | 1000.60 | 640.31 | 7.34 | 8.53 | 3.73 | 1.48 |
+| webis-touche2020 | 431.12 | 492.55 | 840.23 | 471.60 | 13.53 | 12.36 | OOM | 1.1 |
 
 
 Notes:
@@ -281,21 +285,21 @@ The following results follow the same setup as the queries/s benchmarks describe
 
 | dataset | PISA | BM25S (0.3.9) | BM25S-F | BM25S-FQ | ES | PSRN | PT | Rank |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| arguana | 3432.50 | 9406.9 | 150572.1 | 150572.1 | 3591.63 | 1225.18 | 638.1 | 5021.3 |
-| climate-fever | 5462.73 | 14916.5 | 88541.1 | 88541.1 | 3825.89 | 6880.42 | nan | 7085.51 |
-| cqadupstack | 3963.76 | bug[^cqa] | 85627.7 | 85627.7 | 3725.43 | nan | nan | 5370.32 |
-| dbpedia-entity | 9019.62 | 30176.7 | 149225.7 | 149225.7 | 6333.82 | 8501.7 | nan | 9110.36 |
-| fever | 4903.06 | 16090.0 | 110445.7 | 110445.7 | 3879.63 | 7007.5 | nan | 5482.64 |
-| fiqa | 4426.92 | 14917.2 | 181518.0 | 181518.0 | 4035.11 | 3735.38 | 421.51 | 6455.53 |
-| hotpotqa | 9883.85 | 22174.6 | 152794.5 | 152794.5 | 5455.6 | 10342.5 | nan | 9407.9 |
-| msmarco | 10205.53 | 21314.9 | 154011.0 | 154011.0 | 5391.29 | 9686.07 | nan | 12455.9 |
-| nfcorpus | 2381.11 | 10503.1 | 93188.8 | 93188.8 | 1688.15 | 692.05 | 442.2 | 3579.47 |
-| nq | 7122.05 | 17582.1 | 133639.4 | 133639.4 | 5742.13 | 6652.33 | nan | 6048.85 |
-| quora | 38512.02 | 36844.0 | 1607935.3 | 1607935.3 | 8189.75 | 22818.5 | 6251.26 | 47609.2 |
-| scidocs | 3085.13 | 10340.9 | 131299.4 | 131299.4 | 3008.45 | 2137.64 | 312.72 | 4232.15 |
-| scifact | 2449.91 | 7948.2 | 108102.0 | 108102.0 | 2649.57 | 880.53 | 442.61 | 3792.84 |
-| trec-covid | 4642.59 | 12463.2 | 136267.0 | 136267.0 | 2966.98 | 3768.1 | 406.37 | 4672.62 |
-| webis-touche2020 | 2228.10 | 9879.3 | 84367.6 | 84367.6 | 2484.87 | 2718.41 | nan | 3115.96 |
+| arguana | 3432.50 | 9406.9 | 150572.1 | 91209.2 | 3591.63 | 1225.18 | 638.1 | 5021.3 |
+| climate-fever | 5462.73 | 14916.5 | 88541.1 | 83625.1 | 3825.89 | 6880.42 | nan | 7085.51 |
+| cqadupstack | 3963.76 | bug[^cqa] | 85627.7 | 91029.2 | 3725.43 | nan | nan | 5370.32 |
+| dbpedia-entity | 9019.62 | 30176.7 | 149225.7 | 183817.0 | 6333.82 | 8501.7 | nan | 9110.36 |
+| fever | 4903.06 | 16090.0 | 110445.7 | 89900.9 | 3879.63 | 7007.5 | nan | 5482.64 |
+| fiqa | 4426.92 | 14917.2 | 181518.0 | 108390.0 | 4035.11 | 3735.38 | 421.51 | 6455.53 |
+| hotpotqa | 9883.85 | 22174.6 | 152794.5 | 180594.0 | 5455.6 | 10342.5 | nan | 9407.9 |
+| msmarco | 10205.53 | 21314.9 | 154011.0 | 252236.2 | 5391.29 | 9686.07 | nan | 12455.9 |
+| nfcorpus | 2381.11 | 10503.1 | 93188.8 | 57438.1 | 1688.15 | 692.05 | 442.2 | 3579.47 |
+| nq | 7122.05 | 17582.1 | 133639.4 | 144995.5 | 5742.13 | 6652.33 | nan | 6048.85 |
+| quora | 38512.02 | 36844.0 | 1607935.3 | 989484.0 | 8189.75 | 22818.5 | 6251.26 | 47609.2 |
+| scidocs | 3085.13 | 10340.9 | 131299.4 | 83788.1 | 3008.45 | 2137.64 | 312.72 | 4232.15 |
+| scifact | 2449.91 | 7948.2 | 108102.0 | 62314.6 | 2649.57 | 880.53 | 442.61 | 3792.84 |
+| trec-covid | 4642.59 | 12463.2 | 136267.0 | 82282.5 | 2966.98 | 3768.1 | 406.37 | 4672.62 |
+| webis-touche2020 | 2228.10 | 9879.3 | 84367.6 | 53521.1 | 2484.87 | 2718.41 | nan | 3115.96 |
 
 #### NDCG@10
 
