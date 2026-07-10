@@ -178,29 +178,60 @@ The shorthands used are:
 - `OOM` for out-of-memory error
 - `DNT` for did not terminate (i.e. went over 12 hours)
 
+We use two-letter abbreviations for the BEIR datasets in the tables below.
+
+<details>
+<summary>Click to show dataset abbreviations</summary>
+
+- `AG` for arguana
+- `CD` for cqadupstack
+- `CF` for climate-fever
+- `DB` for dbpedia-entity
+- `FQ` for fiqa
+- `FV` for fever
+- `HP` for hotpotqa
+- `MS` for msmarco
+- `NF` for nfcorpus
+- `NQ` for nq
+- `QR` for quora
+- `SD` for scidocs
+- `SF` for scifact
+- `TC` for trec-covid
+- `WT` for webis-touche2020
+
+</details>
+
 ### Queries per second
 
 > The `BM25S (0.3.9)`, `BM25S-F`, and `BM25S-FQ` columns were re-run together on current Kaggle CPU (single-thread, numba backend, min-of-3 reps) so they are apples-to-apples with each other; the other engines' numbers are from the original benchmark and may reflect different hardware. Retrieval quality (NDCG@10 / Recall@1000) for `BM25S-F` is identical to `BM25S (0.3.9)` (differences in the 3rd–4th decimal, tie ordering); `BM25S-FQ` is within tie-level noise. `BM25S-FQ` (8-bit `quantize=True`) helps when retrieval is cache/bandwidth-bound, i.e. on **large** collections — it moves ~half the bytes (uint8 impacts, uint16 accumulator), giving msmarco 55→156 q/s, nq 179→278, dbpedia 104→216. On small collections that already fit in cache the byte savings don't apply, so it is a wash-to-slightly-slower (and their sub-millisecond query times are dominated by measurement noise). The quantized index is built once during the retrieval warmup, not inside the timed query. NDCG@10/Recall@1000 stay within tie-level noise (rows below).
 
 [^cqa]: Stock `BM25S (0.3.9)` fails on cqadupstack out-of-the-box: `merge_cqa_dupstack` writes the merged queries with orjson, which the loader can't parse (`JSONDecodeError`). The number shown is with a one-line back-patch of that function ([kernel](https://www.kaggle.com/code/xhlulu/basecqafix)); the bug is fixed natively in `bm25s-fast-preview`, so `BM25S-F`/`BM25S-FQ` run it unmodified. Retrieval quality is byte-identical between `BM25S (0.3.9)` and `BM25S-F` on this dataset (NDCG@10 0.29939, Recall@1000 0.73307).
 
-| dataset | PISA | BM25S (0.3.9) | BM25S-F | BM25S-FQ | ES | PSRN | PT | R-BM25 |
-|:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| arguana | 270.53 | 1231.13 | 1989.34 | 1346.28 | 13.67 | 11.95 | 110.51 | 2 |
-| climate-fever | 35.95 | 33.11 | 48.85 | 75.68 | 4.02 | 8.06 | OOM | 0.03 |
-| cqadupstack | 362.39 | 443.21[^cqa] | 431.81 | 386.77 | 13.38 | DNT | OOM | 0.77 |
-| dbpedia-entity | 197.45 | 125.88 | 104.30 | 215.65 | 10.68 | 12.69 | OOM | 0.11 |
-| fever | 81.42 | 45.32 | 122.12 | 142.79 | 7.45 | 10.52 | OOM | 0.06 |
-| fiqa | 714.35 | 1427.50 | 1931.91 | 1299.55 | 16.96 | 12.51 | 20.52 | 4.46 |
-| hotpotqa | 54.98 | 41.71 | 59.80 | 105.02 | 7.11 | 10.41 | OOM | 0.04 |
-| msmarco | 178.65 | 32.43 | 55.08 | 156.41 | 11.88 | 11.01 | OOM | 0.07 |
-| nfcorpus | 5111.72 | 79179.05 | 120318.92 | 8610.01 | 45.84 | 32.94 | 256.67 | 224.66 |
-| nq | 168.12 | 120.75 | 178.97 | 278.30 | 12.16 | 11.04 | OOM | 0.1 |
-| quora | 735.20 | 451.29 | 876.52 | 639.36 | 21.8 | 15.58 | 6.49 | 1.18 |
-| scidocs | 818.97 | 1564.01 | 2272.69 | 1515.23 | 17.93 | 14.1 | 41.34 | 9.01 |
-| scifact | 1463.73 | 3222.19 | 4658.14 | 3539.55 | 20.81 | 15.02 | 184.3 | 47.6 |
-| trec-covid | 282.94 | 694.65 | 1000.60 | 640.31 | 7.34 | 8.53 | 3.73 | 1.48 |
-| webis-touche2020 | 431.12 | 492.55 | 840.23 | 471.60 | 13.53 | 12.36 | OOM | 1.1 |
+**Sub-1M corpora** (< 1M documents)
+
+| Engine | AG | CD | FQ | NF | QR | SD | SF | TC | WT |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| PISA | 270.53 | 362.39 | 714.35 | 5111.72 | 735.20 | 818.97 | 1463.73 | 282.94 | 431.12 |
+| BM25S (0.3.9) | 1231.13 | 443.21[^cqa] | 1427.50 | 79179.05 | 451.29 | 1564.01 | 3222.19 | 694.65 | 492.55 |
+| BM25S-F | 1989.34 | 431.81 | 1931.91 | 120318.92 | 876.52 | 2272.69 | 4658.14 | 1000.60 | 840.23 |
+| BM25S-FQ | 1346.28 | 386.77 | 1299.55 | 8610.01 | 639.36 | 1515.23 | 3539.55 | 640.31 | 471.60 |
+| ES | 13.67 | 13.38 | 16.96 | 45.84 | 21.8 | 17.93 | 20.81 | 7.34 | 13.53 |
+| PSRN | 11.95 | DNT | 12.51 | 32.94 | 15.58 | 14.1 | 15.02 | 8.53 | 12.36 |
+| PT | 110.51 | OOM | 20.52 | 256.67 | 6.49 | 41.34 | 184.3 | 3.73 | OOM |
+| R-BM25 | 2 | 0.77 | 4.46 | 224.66 | 1.18 | 9.01 | 47.6 | 1.48 | 1.1 |
+
+**Large corpora** (> 1M documents)
+
+| Engine | CF | DB | FV | HP | MS | NQ |
+|:---|---:|---:|---:|---:|---:|---:|
+| PISA | 35.95 | 197.45 | 81.42 | 54.98 | 178.65 | 168.12 |
+| BM25S (0.3.9) | 33.11 | 125.88 | 45.32 | 41.71 | 32.43 | 120.75 |
+| BM25S-F | 48.85 | 104.30 | 122.12 | 59.80 | 55.08 | 178.97 |
+| BM25S-FQ | 75.68 | 215.65 | 142.79 | 105.02 | 156.41 | 278.30 |
+| ES | 4.02 | 10.68 | 7.45 | 7.11 | 11.88 | 12.16 |
+| PSRN | 8.06 | 12.69 | 10.52 | 10.41 | 11.01 | 11.04 |
+| PT | OOM | OOM | OOM | OOM | OOM | OOM |
+| R-BM25 | 0.03 | 0.11 | 0.06 | 0.04 | 0.07 | 0.1 |
 
 
 Notes:
@@ -279,49 +310,33 @@ Notes:
 
 The following results follow the same setup as the queries/s benchmarks described above (single-core).
 
-| dataset | PISA | BM25S (0.3.9) | BM25S-F | BM25S-FQ | ES | PSRN | PT | Rank |
-|:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| arguana | 3432.50 | 9406.9 | 150572.1 | 91209.2 | 3591.63 | 1225.18 | 638.1 | 5021.3 |
-| climate-fever | 5462.73 | 14916.5 | 88541.1 | 83625.1 | 3825.89 | 6880.42 | nan | 7085.51 |
-| cqadupstack | 3963.76 | 14669.4[^cqa] | 85627.7 | 91029.2 | 3725.43 | nan | nan | 5370.32 |
-| dbpedia-entity | 9019.62 | 30176.7 | 149225.7 | 183817.0 | 6333.82 | 8501.7 | nan | 9110.36 |
-| fever | 4903.06 | 16090.0 | 110445.7 | 89900.9 | 3879.63 | 7007.5 | nan | 5482.64 |
-| fiqa | 4426.92 | 14917.2 | 181518.0 | 108390.0 | 4035.11 | 3735.38 | 421.51 | 6455.53 |
-| hotpotqa | 9883.85 | 22174.6 | 152794.5 | 180594.0 | 5455.6 | 10342.5 | nan | 9407.9 |
-| msmarco | 10205.53 | 21314.9 | 154011.0 | 252236.2 | 5391.29 | 9686.07 | nan | 12455.9 |
-| nfcorpus | 2381.11 | 10503.1 | 93188.8 | 57438.1 | 1688.15 | 692.05 | 442.2 | 3579.47 |
-| nq | 7122.05 | 17582.1 | 133639.4 | 144995.5 | 5742.13 | 6652.33 | nan | 6048.85 |
-| quora | 38512.02 | 36844.0 | 1607935.3 | 989484.0 | 8189.75 | 22818.5 | 6251.26 | 47609.2 |
-| scidocs | 3085.13 | 10340.9 | 131299.4 | 83788.1 | 3008.45 | 2137.64 | 312.72 | 4232.15 |
-| scifact | 2449.91 | 7948.2 | 108102.0 | 62314.6 | 2649.57 | 880.53 | 442.61 | 3792.84 |
-| trec-covid | 4642.59 | 12463.2 | 136267.0 | 82282.5 | 2966.98 | 3768.1 | 406.37 | 4672.62 |
-| webis-touche2020 | 2228.10 | 9879.3 | 84367.6 | 53521.1 | 2484.87 | 2718.41 | nan | 3115.96 |
+**Sub-1M corpora** (< 1M documents)
+
+| Engine | AG | CD | FQ | NF | QR | SD | SF | TC | WT |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| PISA | 3432.50 | 3963.76 | 4426.92 | 2381.11 | 38512.02 | 3085.13 | 2449.91 | 4642.59 | 2228.10 |
+| BM25S (0.3.9) | 9406.9 | 14669.4[^cqa] | 14917.2 | 10503.1 | 36844.0 | 10340.9 | 7948.2 | 12463.2 | 9879.3 |
+| BM25S-F | 150572.1 | 85627.7 | 181518.0 | 93188.8 | 1607935.3 | 131299.4 | 108102.0 | 136267.0 | 84367.6 |
+| BM25S-FQ | 91209.2 | 91029.2 | 108390.0 | 57438.1 | 989484.0 | 83788.1 | 62314.6 | 82282.5 | 53521.1 |
+| ES | 3591.63 | 3725.43 | 4035.11 | 1688.15 | 8189.75 | 3008.45 | 2649.57 | 2966.98 | 2484.87 |
+| PSRN | 1225.18 | nan | 3735.38 | 692.05 | 22818.5 | 2137.64 | 880.53 | 3768.1 | 2718.41 |
+| PT | 638.1 | nan | 421.51 | 442.2 | 6251.26 | 312.72 | 442.61 | 406.37 | nan |
+| Rank | 5021.3 | 5370.32 | 6455.53 | 3579.47 | 47609.2 | 4232.15 | 3792.84 | 4672.62 | 3115.96 |
+
+**Large corpora** (> 1M documents)
+
+| Engine | CF | DB | FV | HP | MS | NQ |
+|:---|---:|---:|---:|---:|---:|---:|
+| PISA | 5462.73 | 9019.62 | 4903.06 | 9883.85 | 10205.53 | 7122.05 |
+| BM25S (0.3.9) | 14916.5 | 30176.7 | 16090.0 | 22174.6 | 21314.9 | 17582.1 |
+| BM25S-F | 88541.1 | 149225.7 | 110445.7 | 152794.5 | 154011.0 | 133639.4 |
+| BM25S-FQ | 83625.1 | 183817.0 | 89900.9 | 180594.0 | 252236.2 | 144995.5 |
+| ES | 3825.89 | 6333.82 | 3879.63 | 5455.6 | 5391.29 | 5742.13 |
+| PSRN | 6880.42 | 8501.7 | 7007.5 | 10342.5 | 9686.07 | 6652.33 |
+| PT | nan | nan | nan | nan | nan | nan |
+| Rank | 7085.51 | 9110.36 | 5482.64 | 9407.9 | 12455.9 | 6048.85 |
 
 #### NDCG@10
-
-We use abbreviations for datasets of BEIR benchmarks.
-
-<details>
-<summary>Click to show dataset abbreviations</summary>
-
-- `AG` for arguana
-- `CD` for cqadupstack
-- `CF` for climate-fever
-- `DB` for dbpedia-entity
-- `FQ` for fiqa
-- `FV` for fever
-- `HP` for hotpotqa
-- `MS` for msmarco
-- `NF` for nfcorpus
-- `NQ` for nq
-- `QR` for quora
-- `SD` for scidocs
-- `SF` for scifact
-- `TC` for trec-covid
-- `WT` for webis-touche2020
-
-</details>
-
 
 |   k1 |   b | method    |   Avg. |   AG | CD   | CF   | DB   |   FQ | FV   | HP   | MS   |   NF | NQ   |   QR |   SD |   SF |   TC | WT   |
 |-----:|----:|:----------|-------:|-----:|:-----|:-----|:-----|-----:|:-----|:-----|:-----|-----:|:-----|-----:|-----:|-----:|-----:|:-----|
