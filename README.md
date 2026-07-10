@@ -186,13 +186,13 @@ The shorthands used are:
 
 > The `BM25S (0.3.9)`, `BM25S-F`, and `BM25S-FQ` columns were re-run together on current Kaggle CPU (single-thread, numba backend, min-of-3 reps) so they are apples-to-apples with each other; the other engines' numbers are from the original benchmark and may reflect different hardware. Retrieval quality (NDCG@10 / Recall@1000) for `BM25S-F` is identical to `BM25S (0.3.9)` (differences in the 3rd–4th decimal, tie ordering); `BM25S-FQ` is within tie-level noise. `BM25S-FQ` (8-bit `quantize=True`) helps when retrieval is cache/bandwidth-bound, i.e. on **large** collections — it moves ~half the bytes (uint8 impacts, uint16 accumulator), giving msmarco 55→156 q/s, nq 179→278, dbpedia 104→216. On small collections that already fit in cache the byte savings don't apply, so it is a wash-to-slightly-slower (and their sub-millisecond query times are dominated by measurement noise). The quantized index is built once during the retrieval warmup, not inside the timed query. NDCG@10/Recall@1000 stay within tie-level noise (rows below).
 
-[^cqa]: `BM25S (0.3.9)` fails on cqadupstack: `merge_cqa_dupstack` writes the merged queries with orjson, which the loader can't parse (`JSONDecodeError`). Fixed in `bm25s-fast-preview` ([commit](https://github.com/xhluca/bm25s-fast-preview/commit/HEAD)), so `BM25S-F`/`BM25S-FQ` run it.
+[^cqa]: Stock `BM25S (0.3.9)` fails on cqadupstack out-of-the-box: `merge_cqa_dupstack` writes the merged queries with orjson, which the loader can't parse (`JSONDecodeError`). The number shown is with a one-line back-patch of that function ([kernel](https://www.kaggle.com/code/xhlulu/basecqafix)); the bug is fixed natively in `bm25s-fast-preview`, so `BM25S-F`/`BM25S-FQ` run it unmodified. Retrieval quality is byte-identical between `BM25S (0.3.9)` and `BM25S-F` on this dataset (NDCG@10 0.29939, Recall@1000 0.73307).
 
 | dataset | PISA | BM25S (0.3.9) | BM25S-F | BM25S-FQ | ES | PSRN | PT | R-BM25 |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|
 | arguana | 270.53 | 1231.13 | 1989.34 | 1346.28 | 13.67 | 11.95 | 110.51 | 2 |
 | climate-fever | 35.95 | 33.11 | 48.85 | 75.68 | 4.02 | 8.06 | OOM | 0.03 |
-| cqadupstack | 362.39 | bug[^cqa] | 431.81 | 386.77 | 13.38 | DNT | OOM | 0.77 |
+| cqadupstack | 362.39 | 443.21[^cqa] | 431.81 | 386.77 | 13.38 | DNT | OOM | 0.77 |
 | dbpedia-entity | 197.45 | 125.88 | 104.30 | 215.65 | 10.68 | 12.69 | OOM | 0.11 |
 | fever | 81.42 | 45.32 | 122.12 | 142.79 | 7.45 | 10.52 | OOM | 0.06 |
 | fiqa | 714.35 | 1427.50 | 1931.91 | 1299.55 | 16.96 | 12.51 | 20.52 | 4.46 |
@@ -287,7 +287,7 @@ The following results follow the same setup as the queries/s benchmarks describe
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|
 | arguana | 3432.50 | 9406.9 | 150572.1 | 91209.2 | 3591.63 | 1225.18 | 638.1 | 5021.3 |
 | climate-fever | 5462.73 | 14916.5 | 88541.1 | 83625.1 | 3825.89 | 6880.42 | nan | 7085.51 |
-| cqadupstack | 3963.76 | bug[^cqa] | 85627.7 | 91029.2 | 3725.43 | nan | nan | 5370.32 |
+| cqadupstack | 3963.76 | 14669.4[^cqa] | 85627.7 | 91029.2 | 3725.43 | nan | nan | 5370.32 |
 | dbpedia-entity | 9019.62 | 30176.7 | 149225.7 | 183817.0 | 6333.82 | 8501.7 | nan | 9110.36 |
 | fever | 4903.06 | 16090.0 | 110445.7 | 89900.9 | 3879.63 | 7007.5 | nan | 5482.64 |
 | fiqa | 4426.92 | 14917.2 | 181518.0 | 108390.0 | 4035.11 | 3735.38 | 421.51 | 6455.53 |
